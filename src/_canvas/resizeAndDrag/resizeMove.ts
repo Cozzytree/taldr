@@ -148,6 +148,24 @@ const resizeMove = ({
 }) => {
    if (!shape) return;
    switch (shape.type) {
+      case "line":
+         if (!shape.props.points) return false;
+         if (direction === "top-edge") {
+            shape.props.points[0] = {
+               x: mouseX,
+               y: mouseY,
+               offsetX: 0,
+               offsetY: 0,
+            };
+         } else if (direction === "bottom-edge") {
+            shape.props.points[shape.props.points.length - 1] = {
+               x: mouseX,
+               y: mouseY,
+               offsetX: 0,
+               offsetY: 0,
+            };
+         }
+         break;
       case "rect":
          if (direction)
             rectResizemove({ direction, mouseX, mouseY, resizeShape, shape });

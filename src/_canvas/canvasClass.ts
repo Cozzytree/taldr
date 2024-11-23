@@ -13,7 +13,10 @@ import {
 } from "./newShape";
 import { getResizeShape } from "./resizeAndDrag/getResizeshape";
 import { resizeMove } from "./resizeAndDrag/resizeMove";
-import { reEvaluateShape } from "./utils";
+import { getOffsets, reEvaluateShape } from "./utils";
+import { getDragShape } from "./resizeAndDrag/getDragShape";
+import { dragMove } from "./resizeAndDrag/dragMove";
+import { drawPencil } from "./draw/drawPencil";
 
 interface onChangeProps {
    shapes: CanvasShape[];
@@ -165,6 +168,16 @@ class CanvasClass {
                   massiveSelected: this.multipleSelection.isSelected,
                });
                break;
+            case "pencil":
+               drawPencil({
+                  ctx: this.ctx,
+                  isActive,
+                  shape: shape.props,
+                  shouldRestore: false,
+                  tolerance: this.tolerance,
+                  activeColor: this.activeColor,
+                  massiveSelected: this.multipleSelection.isSelected,
+               });
          }
       });
 
@@ -173,8 +186,6 @@ class CanvasClass {
 
    mouse_Down(e: MouseEvent) {
       const { x: mouseX, y: mouseY } = this.getTransformedMouseCoords(e);
-      cConf.activeShapes.clear(); /* clear actives */
-      console.log(cConf.activeShapes);
 
       if (cConf.currMode !== "pointer") {
          this.newShapeParams = intializeShape({
@@ -186,10 +197,11 @@ class CanvasClass {
       }
 
       let isResizeorDrag = false;
+      /* resize shape */
       for (let index = 0; index < this.canvasShapes.length; index++) {
          if (
-            !this.canvasShapes[index]
-            // || !cConf.activeShapes.has(this.canvasShapes[index].id)
+            !this.canvasShapes[index] ||
+            cConf.activeShapes.get(this.canvasShapes[index].id)
          )
             continue;
 
@@ -202,8 +214,31 @@ class CanvasClass {
          });
          if (direction) {
             this.resizeShape = { index: index, shape: shape, direction };
-            cConf.activeShapes.add(shape.id); /* add to actives */
             isResizeorDrag = true;
+            break;
+         }
+      }
+
+      if (isResizeorDrag) {
+         this.draw();
+         return;
+      }
+
+      cConf.activeShapes.clear(); /* clear actives */
+
+      /* drag shape */
+      for (let index = 0; index < this.canvasShapes.length; index++) {
+         if (!this.canvasShapes[index]) continue;
+         if (
+            getDragShape({ mouseX, mouseY, shape: this.canvasShapes[index] })
+         ) {
+            this.dragShape = index;
+            isResizeorDrag = true;
+            console.log("drag", index);
+
+            /* get offset */
+            getOffsets({ mouseX, mouseY, shape: this.canvasShapes[index] });
+
             break;
          }
       }
@@ -247,6 +282,13 @@ class CanvasClass {
          this.draw();
          return;
       }
+
+      /* drag shape */
+      if (this.dragShape !== undefined) {
+         dragMove({ mouseX, mouseY, shape: this.canvasShapes[this.dragShape] });
+         this.draw();
+         return;
+      }
    }
 
    mouse_Up(e: MouseEvent) {
@@ -254,10 +296,11 @@ class CanvasClass {
       /* inset shape */
       if (this.newShapeParams) {
          buildShape({ mouseX, mouseY, shape: this.newShapeParams });
-
          this.canvasShapes.push(this.newShapeParams);
          /* update mode after new shape */
-         cConf.currMode = "pointer";
+         if (this.newShapeParams.type !== "pencil") {
+            cConf.currMode = "pointer";
+         }
          this.afterNewShape({
             shape: this.newShapeParams,
             mode: cConf.currMode,
@@ -266,8 +309,20 @@ class CanvasClass {
          this.reset();
       }
 
-      if (this.resizeShape) {
+      if (this.resizeShape !== undefined) {
          reEvaluateShape(this.canvasShapes[this.resizeShape.index]);
+         cConf.activeShapes.set(
+            this.canvasShapes[this.resizeShape.index].id,
+            true,
+         ); /* add to actives */
+      }
+
+      if (this.dragShape !== undefined) {
+         reEvaluateShape(this.canvasShapes[this.dragShape]);
+         cConf.activeShapes.set(
+            this.canvasShapes[this.dragShape].id,
+            true,
+         ); /* add to actives */
       }
 
       this.reset();
@@ -325,7 +380,7 @@ class CanvasClass {
             newText.props.w = w;
             newText.props.h = h;
 
-            cConf.activeShapes.add(newText.id);
+            cConf.activeShapes.set(newText.id, true);
             cConf.currMode = "pointer";
 
             this.afterNewShape({ mode: cConf.currMode, shape: newText });

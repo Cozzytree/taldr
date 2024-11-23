@@ -19,9 +19,21 @@ const getResizeShape = ({
    switch (shape.type) {
       case "line":
          if (props.points) {
-            // props.points.forEach((p) => {
-            //    if (mouseX)
-            // })
+            for (let i = 0; i < props.points.length; i++) {
+               const p = props.points[i];
+               if (
+                  mouseX >= p.x - tolerance &&
+                  mouseX <= p.x + tolerance &&
+                  mouseY >= p.y - tolerance &&
+                  mouseY <= p.y + tolerance
+               ) {
+                  if (i === 0) {
+                     return "top-edge";
+                  } else if (i === props.points.length - 1) {
+                     return "bottom-edge";
+                  }
+               }
+            }
          }
          break;
       case "ellipse":

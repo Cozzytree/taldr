@@ -8,6 +8,7 @@ const drawDotsAndRectActive = ({
    context,
    tolerance,
    activeColor,
+   drawRect = true,
    isMassiveSelected,
 }: {
    x: number;
@@ -15,6 +16,7 @@ const drawDotsAndRectActive = ({
    width: number;
    height: number;
    tolerance: number;
+   drawRect?: boolean;
    activeColor: string;
    isMassiveSelected: boolean;
    context: CanvasRenderingContext2D;
@@ -32,27 +34,31 @@ const drawDotsAndRectActive = ({
          ctx: context,
       });
 
-   // Draw active rectangle
-   context.beginPath();
-   context.strokeStyle = activeColor;
-   context.lineWidth = 2;
-   // context.setLineDash([5, 5]);
-   context.rect(
-      x - tolerance,
-      y - tolerance,
-      width + 2 * tolerance,
-      height + 2 * tolerance,
-   );
-   context.stroke();
-   context.closePath();
+   if (drawRect) {
+      // Draw active rectangle
+      context.beginPath();
+      context.strokeStyle = activeColor;
+      context.lineWidth = 2;
+      // context.setLineDash([5, 5]);
+      context.rect(
+         x - tolerance,
+         y - tolerance,
+         width + 2 * tolerance,
+         height + 2 * tolerance,
+      );
+      context.stroke();
+      context.closePath();
+   }
 };
 
 const dots = ({
    ctx,
    sides,
    activeColor,
+   shouldFill = false,
 }: {
    activeColor: string;
+   shouldFill?: boolean;
    sides: { x: number; y: number }[];
    ctx: CanvasRenderingContext2D;
 }) => {
@@ -62,7 +68,7 @@ const dots = ({
       ctx.strokeStyle = activeColor;
       ctx.fillStyle = activeColor;
       ctx.arc(sides[i].x, sides[i].y, 5, 0, 2 * Math.PI, false);
-      // ctx.fill();
+      if (shouldFill) ctx.fill();
       ctx.stroke();
       ctx.closePath();
    }
@@ -73,37 +79,30 @@ const adjustWithandHeightPoints = ({
 }: {
    points: { x: number; y: number }[];
 }) => {
-   let x = points[0].x;
-   let y = points[0].y;
-   let width = 0;
-   let height = 0;
-
+   let x = Infinity; // initialize x and y as infinity
+   let y = Infinity;
+   let maxX = -Infinity;
+   let maxY = -Infinity;
    points.forEach((p) => {
-      if (p.x < x) {
-         width = x - p.x;
+      if (x > p.x) {
          x = p.x;
-      } else {
-         width = p.x - x;
       }
-
-      if (p.y < y) {
-         height = y - p.y;
+      if (maxX < p.x) {
+         maxX = p.x;
+      }
+      if (y > p.y) {
          y = p.y;
-      } else {
-         height = p.y - y;
+      }
+      if (maxY < p.y) {
+         maxY = p.y;
       }
    });
-
-   return { x, y, width, height };
+   return { x, y, width: maxX - x, height: maxY - y };
 };
 
 const reEvaluateShape = (shape: CanvasShape) => {
    if (!shape) return;
    switch (shape.type) {
-      case "rect":
-         shape.props.w = Math.max(shape.props.w, 20);
-         shape.props.h = Math.max(shape.props.h, 20);
-         break;
       case "ellipse":
          shape.props.xRadius = Math.max(shape.props.xRadius ?? 0, 20);
          shape.props.yRadius = Math.max(shape.props.yRadius ?? 0, 20);
@@ -121,12 +120,81 @@ const reEvaluateShape = (shape: CanvasShape) => {
             shape.props.h = height;
          }
          break;
+      case "pencil":
+         if (shape.props.points) {
+            const { width, height, x, y } = adjustWithandHeightPoints({
+               points: shape.props.points,
+            });
+            shape.props.x = x;
+            shape.props.y = y;
+            shape.props.w = width;
+            shape.props.h = height;
+         }
+         break;
+      default:
+         shape.props.w = Math.max(shape.props.w, 20);
+         shape.props.h = Math.max(shape.props.h, 20);
+         break;
+   }
+};
+
+const isInside = ({
+   inner,
+   outer,
+}: {
+   inner: { x: number; y: number; w: number; h: number };
+   outer: { x: number; y: number; w: number; h: number };
+}) => {
+   return (
+      inner.x >= outer.x &&
+      inner.y >= outer.y &&
+      inner.x + inner.w <= outer.x + outer.w &&
+      inner.y + inner.h <= outer.y + outer.h
+   );
+};
+
+const getOffsets = ({
+   shape,
+   mouseX,
+   mouseY,
+}: {
+   shape: CanvasShape;
+   mouseX: number;
+   mouseY: number;
+}) => {
+   switch (shape.type) {
+      case "ellipse":
+         shape.props.offsetX = mouseX - shape.props.x;
+         shape.props.offsetY = mouseY - shape.props.y;
+         break;
+      case "line":
+         shape.props.offsetX = mouseX - shape.props.x;
+         shape.props.offsetY = mouseY - shape.props.y;
+         shape.props.points?.forEach((p) => {
+            p.offsetX = mouseX - p.x;
+            p.offsetY = mouseY - p.y;
+         });
+         break;
+      case "pencil":
+         shape.props.offsetX = mouseX - shape.props.x;
+         shape.props.offsetY = mouseY - shape.props.y;
+         shape.props.points?.forEach((p) => {
+            p.offsetX = mouseX - p.x;
+            p.offsetY = mouseY - p.y;
+         });
+         break;
+      default:
+         shape.props.offsetX = mouseX - shape.props.x;
+         shape.props.offsetY = mouseY - shape.props.y;
+         break;
    }
 };
 
 export {
    dots,
+   isInside,
+   getOffsets,
+   reEvaluateShape,
    drawDotsAndRectActive,
    adjustWithandHeightPoints,
-   reEvaluateShape,
 };

@@ -1,4 +1,10 @@
-export type shapeType = "rect" | "line" | "ellipse" | "text" | "others";
+export type shapeType =
+   | "rect"
+   | "line"
+   | "ellipse"
+   | "text"
+   | "pencil"
+   | "others";
 
 export type ResizeDirection =
    | "left-edge"
@@ -42,13 +48,16 @@ export interface ShapeProps {
    textAlign: "left" | "center" | "right";
    fontSize: number;
 
-   points?: { x: number; y: number }[];
+   points?: { x: number; y: number; offsetX: number; offsetY: number }[];
 
    /* style */
    fill: string;
    stroke: string;
    dash: [number, number];
    lineWidth: number;
+
+   offsetX: number;
+   offsetY: number;
 }
 
 export interface CanvasShape {

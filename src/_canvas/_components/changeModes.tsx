@@ -9,6 +9,7 @@ import {
    Circle,
 } from "lucide-react";
 import { modes } from "../canvasTypes";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
 const m: { icon: LucideIcon; name: modes }[] = [
@@ -50,14 +51,18 @@ const ChangeModes = ({
    currMode: modes;
 }) => {
    return (
-      <div className="fixed top-7 left-5 z-[100] flex flex-col rounded-sm border-2 border-foreground/10">
+      <div className="fixed top-7 left-5 z-[100] flex flex-col rounded-sm">
          {m.map((mode) => (
             <Button
                onClick={() => changeMode(mode.name)}
                key={mode.name}
                size="sm"
-               variant={mode.name === currMode ? `default` : "secondary"}
-               className={"rounded-none w-8 h-8 focus:outline-0 outline-0"}
+               className={cn(
+                  " w-8 h-8 focus:outline-0 outline-0 hover:bg-foreground/10 hover:text-foreground",
+                  currMode === mode.name
+                     ? "bg-foreground"
+                     : "bg-background text-foreground",
+               )}
             >
                <mode.icon />
             </Button>

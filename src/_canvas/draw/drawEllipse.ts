@@ -15,7 +15,7 @@ const drawEllipse = ({
    isActive?: boolean;
    activeColor?: string;
    shouldRestore?: boolean;
-   massiveSelected: boolean;
+   massiveSelected?: boolean;
    ctx: CanvasRenderingContext2D;
 }) => {
    ctx.beginPath();
@@ -49,7 +49,7 @@ const drawEllipse = ({
          y: shape.y - (shape.yRadius ?? 0),
          height: shape.h,
          width: shape.w,
-         isMassiveSelected: massiveSelected,
+         isMassiveSelected: !!massiveSelected,
       });
    }
 

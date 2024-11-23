@@ -2,14 +2,14 @@ import { modes } from "./canvasTypes";
 
 export const cConf: {
    currMode: modes;
-   activeShapes: Set<string>;
+   activeShapes: Map<string, boolean>;
    scale: { x: number; y: number };
    offset: { x: number; y: number };
 } = {
    currMode: "pointer",
    scale: { x: 1, y: 1 },
    offset: { x: 0, y: 0 },
-   activeShapes: new Set(),
+   activeShapes: new Map(),
 };
 
 class DefaultShape {
@@ -21,8 +21,8 @@ class DefaultShape {
    y: number;
    w: number;
    h: number;
-   offsetX?: number;
-   offsetY?: number;
+   offsetX: number;
+   offsetY: number;
    connectedTo: string[] = [];
    radius: number;
 
@@ -49,6 +49,8 @@ class DefaultShape {
       this.stroke = "#ffffff";
       this.radius = 5;
       this.angle = 0;
+      this.offsetX = 0;
+      this.offsetY = 0;
    }
 }
 

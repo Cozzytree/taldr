@@ -5,6 +5,7 @@ import { rectDraw } from "./draw/drawRect";
 import { drawEllipse } from "./draw/drawEllipse";
 import { drawLine } from "./draw/drawline";
 import { adjustWithandHeightPoints } from "./utils";
+import { drawPencil } from "./draw/drawPencil";
 
 const intializeShape = ({
    shapeType,
@@ -14,6 +15,7 @@ const intializeShape = ({
    initialPoint: { x: number; y: number };
 }): CanvasShape | null => {
    let defaultStyle: ShapeProps;
+
    switch (shapeType) {
       case "rect":
          defaultStyle = new DefaultShape({
@@ -44,7 +46,29 @@ const intializeShape = ({
          });
          defaultStyle.arrowE = true;
          defaultStyle.points = [];
-         defaultStyle.points.push({ x: initialPoint.x, y: initialPoint.y });
+         defaultStyle.points.push({
+            x: initialPoint.x,
+            y: initialPoint.y,
+            offsetX: 0,
+            offsetY: 0,
+         });
+         return {
+            id: uuidv4(),
+            props: defaultStyle as ShapeProps,
+            type: shapeType,
+         };
+      case "pencil":
+         defaultStyle = new DefaultShape({
+            x: initialPoint.x,
+            y: initialPoint.y,
+         });
+         defaultStyle.points = [];
+         defaultStyle.points.push({
+            x: initialPoint.x,
+            y: initialPoint.y,
+            offsetX: 0,
+            offsetY: 0,
+         });
          return {
             id: uuidv4(),
             props: defaultStyle as ShapeProps,
@@ -93,6 +117,14 @@ const buildingNewShape = ({
             tempPoint: { x: mouseX, y: mouseY },
          });
          break;
+      case "pencil":
+         shape.props.points?.push({
+            x: mouseX,
+            y: mouseY,
+            offsetX: 0,
+            offsetY: 0,
+         });
+         drawPencil({ ctx, shape: shape.props });
    }
 };
 
@@ -130,7 +162,23 @@ const buildShape = ({
          break;
       case "line":
          if (shape.props.points) {
-            shape.props.points.push({ x: mouseX, y: mouseY });
+            shape.props.points.push({
+               x: mouseX,
+               y: mouseY,
+               offsetX: 0,
+               offsetY: 0,
+            });
+            const { x, y, width, height } = adjustWithandHeightPoints({
+               points: shape.props.points,
+            });
+            shape.props.x = x;
+            shape.props.y = y;
+            shape.props.w = width;
+            shape.props.h = height;
+         }
+         break;
+      case "pencil":
+         if (shape.props.points) {
             const { x, y, width, height } = adjustWithandHeightPoints({
                points: shape.props.points,
             });

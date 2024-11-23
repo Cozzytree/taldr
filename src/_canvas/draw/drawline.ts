@@ -1,4 +1,5 @@
 import { ShapeProps } from "../canvasTypes";
+import { dots, drawDotsAndRectActive } from "../utils";
 
 const drawArrows = ({
    startPoint,
@@ -92,15 +93,29 @@ const drawLine = ({
       });
    }
 
-   // if (isActive && activeColor) {
-   //    ctx.beginPath();
-   //    ctx.strokeStyle = activeColor;
-   //    ctx.lineWidth = shape.lineWidth;
-   //    ctx.moveTo(shape.points[0].x, shape.points[0].y);
-   //    ctx.lineTo(shape.points[1].x, shape.points[1].y);
-   //    ctx.stroke();
-   //    ctx.closePath();
-   // }
+   if (isActive && activeColor) {
+      dots({
+         ctx,
+         sides: [
+            { x: shape.points[0].x, y: shape.points[0].y },
+            { x: shape.points[1].x, y: shape.points[1].y },
+         ],
+         activeColor,
+         shouldFill: true,
+      });
+      ctx.beginPath();
+      ctx.setLineDash([10, 10]);
+      ctx.strokeStyle = activeColor;
+      ctx.lineWidth = 2;
+      ctx.rect(
+         shape.x - tolerance,
+         shape.y - tolerance,
+         shape.w + 2 * tolerance,
+         shape.h + 2 * tolerance,
+      );
+      ctx.stroke();
+      ctx.closePath();
+   }
 
    if (shouldRestore) {
       ctx.restore();
