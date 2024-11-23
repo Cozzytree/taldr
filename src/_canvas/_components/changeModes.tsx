@@ -1,0 +1,69 @@
+import {
+   MousePointer2,
+   Type,
+   Grab,
+   LucideIcon,
+   Pencil,
+   Square,
+   MoveRight,
+   Circle,
+} from "lucide-react";
+import { modes } from "../canvasTypes";
+import { Button } from "@/components/ui/button";
+
+const m: { icon: LucideIcon; name: modes }[] = [
+   {
+      icon: Grab,
+      name: "hands_free",
+   },
+   {
+      icon: MousePointer2,
+      name: "pointer",
+   },
+   {
+      icon: Square,
+      name: "rect",
+   },
+   {
+      icon: Circle,
+      name: "ellipse",
+   },
+   {
+      icon: MoveRight,
+      name: "line",
+   },
+   {
+      icon: Pencil,
+      name: "pencil",
+   },
+   {
+      icon: Type,
+      name: "text",
+   },
+];
+
+const ChangeModes = ({
+   changeMode,
+   currMode,
+}: {
+   changeMode: (mode: modes) => void;
+   currMode: modes;
+}) => {
+   return (
+      <div className="fixed top-7 left-5 z-[100] flex flex-col rounded-sm border-2 border-foreground/10">
+         {m.map((mode) => (
+            <Button
+               onClick={() => changeMode(mode.name)}
+               key={mode.name}
+               size="sm"
+               variant={mode.name === currMode ? `default` : "secondary"}
+               className={"rounded-none w-8 h-8 focus:outline-0 outline-0"}
+            >
+               <mode.icon />
+            </Button>
+         ))}
+      </div>
+   );
+};
+
+export default ChangeModes;
