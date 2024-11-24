@@ -13,10 +13,14 @@ import {
 } from "./newShape";
 import { getResizeShape } from "./resizeAndDrag/getResizeshape";
 import { resizeMove } from "./resizeAndDrag/resizeMove";
-import { getOffsets, reEvaluateShape } from "./utils";
+import { duplicateShape, getOffsets, reEvaluateShape } from "./utils";
 import { getDragShape } from "./resizeAndDrag/getDragShape";
 import { dragMove } from "./resizeAndDrag/dragMove";
 import { drawPencil } from "./draw/drawPencil";
+import { addTextToShape } from "./add_text_shape";
+import { ShapesIcon } from "lucide-react";
+import { createGuide } from "./showGuides";
+import { lineConnection } from "./resizeAndDrag/line_connection";
 
 interface onChangeProps {
    shapes: CanvasShape[];
@@ -40,7 +44,8 @@ interface contructProps {
 class CanvasClass {
    canvasShapes: CanvasShape[] = [];
    newShapeParams: null | CanvasShape = null;
-   shapeGuides = Map<string, { x: number; y: number }>;
+   shapeGuides: Map<string, { x: number; y: number; w: number; h: number }> =
+      new Map();
    activeColor = "#20ff20";
    tolerance = 5;
    dragShape: number | undefined = undefined;
@@ -201,7 +206,7 @@ class CanvasClass {
       for (let index = 0; index < this.canvasShapes.length; index++) {
          if (
             !this.canvasShapes[index] ||
-            cConf.activeShapes.get(this.canvasShapes[index].id)
+            !cConf.activeShapes.get(this.canvasShapes[index].id)
          )
             continue;
 
@@ -234,7 +239,6 @@ class CanvasClass {
          ) {
             this.dragShape = index;
             isResizeorDrag = true;
-            console.log("drag", index);
 
             /* get offset */
             getOffsets({ mouseX, mouseY, shape: this.canvasShapes[index] });
@@ -268,15 +272,16 @@ class CanvasClass {
          });
       }
 
-      /* resize_move */
+      /* resize_move- */
       if (this.resizeShape) {
          const shape = this.canvasShapes[this.resizeShape.index];
          resizeMove({
-            direction: this.resizeShape.direction,
             mouseX,
             mouseY,
-            resizeShape: this.resizeShape.shape,
             shape,
+            shapes: this.canvasShapes,
+            resizeShape: this.resizeShape.shape,
+            direction: this.resizeShape.direction,
          });
 
          this.draw();
@@ -285,7 +290,12 @@ class CanvasClass {
 
       /* drag shape */
       if (this.dragShape !== undefined) {
-         dragMove({ mouseX, mouseY, shape: this.canvasShapes[this.dragShape] });
+         const shape = this.canvasShapes[this.dragShape];
+
+         dragMove({ mouseX, mouseY, shape, allShapes: this.canvasShapes });
+
+         this.showShapeGuides({ movedShape: shape });
+
          this.draw();
          return;
       }
@@ -306,15 +316,106 @@ class CanvasClass {
             mode: cConf.currMode,
          });
 
+         /* insert to guides */
+         this.insertShapeGuide({
+            id: this.newShapeParams.id,
+            v: {
+               x: this.newShapeParams.props.x,
+               y: this.newShapeParams.props.y,
+               w: this.newShapeParams.props.w,
+               h: this.newShapeParams.props.h,
+            },
+         });
+
          this.reset();
       }
 
       if (this.resizeShape !== undefined) {
-         reEvaluateShape(this.canvasShapes[this.resizeShape.index]);
+         const r_Shape = this.canvasShapes[this.resizeShape.index];
+
+         /* connect line */
+         if (r_Shape.type === "line" && r_Shape.props.points) {
+            let p;
+            if (this.resizeShape.direction === "top-edge") {
+               p = lineConnection({
+                  allShapes: this.canvasShapes,
+                  point: r_Shape.props.points[0],
+               });
+            } else if (this.resizeShape.direction === "bottom-edge") {
+               p = lineConnection({
+                  allShapes: this.canvasShapes,
+                  point: r_Shape.props.points[r_Shape.props.points.length - 1],
+               });
+            }
+            if (p == null || this.canvasShapes[p].id === r_Shape.id) {
+               /* nothing */
+            } else {
+               /* calculate percentage */
+               const xPer =
+                  ((mouseX - this.canvasShapes[p].props.x) /
+                     this.canvasShapes[p].props.w) *
+                  100;
+               const yPer =
+                  ((mouseY - this.canvasShapes[p].props.y) /
+                     this.canvasShapes[p].props.h) *
+                  100;
+
+               if (this.canvasShapes[p].props.connectedTo.includes(r_Shape.id))
+                  return;
+
+               const followPoint = {
+                  x: (xPer / 100) * this.canvasShapes[p].props.w,
+                  y: (yPer / 100) * this.canvasShapes[p].props.h,
+               };
+
+               if (this.resizeShape.direction === "top-edge") {
+                  if (r_Shape.props.endShape) {
+                     if (
+                        r_Shape.props.endShape.shapeId ===
+                        this.canvasShapes[p].id
+                     )
+                        return;
+                  }
+
+                  r_Shape.props.startShape = {
+                     xPer,
+                     yPer,
+                     followPoint,
+                     shapeId: this.canvasShapes[p].id,
+                  };
+                  this.canvasShapes[p].props.connectedTo.push(r_Shape.id);
+               } else {
+                  if (r_Shape.props.startShape) {
+                     if (
+                        r_Shape.props.startShape.shapeId ===
+                        this.canvasShapes[p].id
+                     )
+                        return;
+                  }
+
+                  r_Shape.props.endShape = {
+                     xPer,
+                     yPer,
+                     followPoint,
+                     shapeId: this.canvasShapes[p].id,
+                  };
+                  this.canvasShapes[p].props.connectedTo.push(r_Shape.id);
+               }
+
+               console.log(r_Shape);
+            }
+         }
+
+         reEvaluateShape(r_Shape);
+
          cConf.activeShapes.set(
             this.canvasShapes[this.resizeShape.index].id,
             true,
          ); /* add to actives */
+         this.insertShapeGuide({
+            id: this.canvasShapes[this.resizeShape.index].id,
+            v: this.canvasShapes[this.resizeShape.index].props,
+         });
       }
 
       if (this.dragShape !== undefined) {
@@ -323,6 +424,10 @@ class CanvasClass {
             this.canvasShapes[this.dragShape].id,
             true,
          ); /* add to actives */
+         this.insertShapeGuide({
+            id: this.canvasShapes[this.dragShape].id,
+            v: this.canvasShapes[this.dragShape].props,
+         });
       }
 
       this.reset();
@@ -338,10 +443,64 @@ class CanvasClass {
 
    mouseDblClick(e: MouseEvent) {
       const { x: mouseX, y: mouseY } = this.getTransformedMouseCoords(e);
+
+      /* insert test to shape */
+      let clickedInsideShape = false;
+      for (let index = 0; index < this.canvasShapes.length; index++) {
+         if (!this.canvasShapes[index]) continue;
+
+         if (
+            addTextToShape({
+               mouseX,
+               mouseY,
+               shape: this.canvasShapes[index],
+               fn: (text) => {
+                  this.canvasShapes[index].props.text = text;
+                  this.reset();
+               },
+            })
+         ) {
+            clickedInsideShape = true;
+            break;
+         }
+      }
+
+      if (clickedInsideShape) return;
+
       if (cConf.currMode === "pointer") {
          this.insertText(mouseX, mouseY);
          return;
       }
+   }
+
+   documentKeyDown(e: KeyboardEvent) {
+      if (e.ctrlKey) {
+         e.preventDefault();
+         if (e.key === "d") {
+            this.canvasShapes.forEach((shape) => {
+               if (!cConf.activeShapes.has(shape.id)) return;
+
+               const s = duplicateShape({ shape });
+               if (s) {
+                  /* delete from actives */
+                  cConf.activeShapes.delete(shape.id);
+
+                  this.canvasShapes.push(s);
+                  this.insertShapeGuide({ id: s.id, v: s.props });
+
+                  /* insert to actives */
+                  cConf.activeShapes.set(s.id, true);
+               }
+            });
+         } else if (e.key === "a") {
+            this.canvasShapes.forEach((s) => {
+               if (!s) return;
+               cConf.activeShapes.set(s.id, true);
+            });
+         }
+      }
+
+      this.reset();
    }
 
    resizeCanvas() {
@@ -403,12 +562,56 @@ class CanvasClass {
       this.draw();
    }
 
+   insertShapeGuide({
+      id,
+      v,
+   }: {
+      id: string;
+      v: { x: number; y: number; w: number; h: number };
+   }) {
+      this.shapeGuides.set(id, v);
+   }
+
+   showShapeGuides({ movedShape }: { movedShape: CanvasShape }) {
+      const hasGuide = this.shapeGuides.get(movedShape.id);
+      if (!hasGuide) return;
+
+      const shape = movedShape.props;
+      let isGuide = false;
+
+      this.clearRect(
+         this.fallbackContext,
+         this.fallbackCanvas.height,
+         this.fallbackCanvas.width,
+      );
+
+      this.fallbackContext.strokeStyle = "#ff0000";
+      this.fallbackContext.fillStyle = "#ff0000";
+
+      this.fallbackContext.lineWidth = 1.5;
+
+      this.shapeGuides.forEach((g, key) => {
+         if (key === movedShape.id) return;
+
+         if (createGuide({ ctx: this.fallbackContext, guide: g, shape })) {
+            isGuide = true;
+         }
+      });
+
+      if (isGuide) {
+         this.fallbackContext.stroke();
+         this.fallbackContext.fill();
+      }
+      this.fallbackContext.restore();
+   }
+
    initialize() {
       this.canvas.addEventListener("mousedown", this.mouse_Down.bind(this));
       this.canvas.addEventListener("mousemove", this.mouse_Move.bind(this));
       this.canvas.addEventListener("mouseup", this.mouse_Up.bind(this));
       this.canvas.addEventListener("dblclick", this.mouseDblClick.bind(this));
       this.canvas.addEventListener("click", this.mouseClick.bind(this));
+      document.addEventListener("keydown", this.documentKeyDown.bind(this));
       window.addEventListener("resize", this.resizeCanvas.bind(this));
    }
 
@@ -421,6 +624,7 @@ class CanvasClass {
          "dblclick",
          this.mouseDblClick.bind(this),
       );
+      document.removeEventListener("keydown", this.documentKeyDown.bind(this));
       window.removeEventListener("resize", this.resizeCanvas.bind(this));
    }
 }

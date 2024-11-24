@@ -1,17 +1,19 @@
 import { CanvasShape, ResizeDirection } from "../canvasTypes";
+import { getClosestPoints, intersectLineWithBox } from "../utils";
+import { lineConnection } from "./line_connection";
 
 const rectResizemove = ({
    mouseX,
    mouseY,
-   resizeShape,
-   direction,
    shape,
+   direction,
+   resizeShape,
 }: {
    mouseX: number;
    mouseY: number;
    shape: CanvasShape;
-   direction: ResizeDirection;
    resizeShape: CanvasShape;
+   direction: ResizeDirection;
 }) => {
    const { x, y, w, h } = resizeShape.props;
 
@@ -136,6 +138,7 @@ const ellipseResize = ({
 const resizeMove = ({
    shape,
    mouseX,
+   shapes,
    mouseY,
    direction,
    resizeShape,
@@ -143,6 +146,7 @@ const resizeMove = ({
    mouseX: number;
    mouseY: number;
    shape: CanvasShape;
+   shapes: CanvasShape[];
    resizeShape: CanvasShape;
    direction: ResizeDirection | false;
 }) => {
@@ -151,19 +155,77 @@ const resizeMove = ({
       case "line":
          if (!shape.props.points) return false;
          if (direction === "top-edge") {
-            shape.props.points[0] = {
-               x: mouseX,
-               y: mouseY,
-               offsetX: 0,
-               offsetY: 0,
-            };
+            /* connect line */
+            const p = lineConnection({
+               allShapes: shapes,
+               point: { x: mouseX, y: mouseY },
+            });
+
+            if (p !== null && shapes[p].id !== shape.id) {
+               /* intersection points */
+               const i = intersectLineWithBox(
+                  shape.props.points[shape.props.points.length - 1].x,
+                  shape.props.points[shape.props.points.length - 1].y,
+                  mouseX,
+                  mouseY,
+                  shapes[p].props.x,
+                  shapes[p].props.x + shapes[p].props.w,
+                  shapes[p].props.y,
+                  shapes[p].props.y + shapes[p].props.h,
+               );
+
+               if (i.length) {
+                  shape.props.points[0] = {
+                     x: i[0][0],
+                     y: i[0][1],
+                     offsetX: 0,
+                     offsetY: 0,
+                  };
+               }
+            } else {
+               shape.props.points[0] = {
+                  x: mouseX,
+                  y: mouseY,
+                  offsetX: 0,
+                  offsetY: 0,
+               };
+            }
          } else if (direction === "bottom-edge") {
-            shape.props.points[shape.props.points.length - 1] = {
-               x: mouseX,
-               y: mouseY,
-               offsetX: 0,
-               offsetY: 0,
-            };
+            /* connect line */
+            const p = lineConnection({
+               allShapes: shapes,
+               point: { x: mouseX, y: mouseY },
+            });
+
+            if (p !== null && shapes[p].id !== shape.id) {
+               /* intersection points */
+               const i = intersectLineWithBox(
+                  shape.props.points[0].x,
+                  shape.props.points[0].y,
+                  mouseX,
+                  mouseY,
+                  shapes[p].props.x,
+                  shapes[p].props.x + shapes[p].props.w,
+                  shapes[p].props.y,
+                  shapes[p].props.y + shapes[p].props.h,
+               );
+
+               if (i.length) {
+                  shape.props.points[shape.props.points.length - 1] = {
+                     x: i[0][0],
+                     y: i[0][1],
+                     offsetX: 0,
+                     offsetY: 0,
+                  };
+               }
+            } else {
+               shape.props.points[shape.props.points.length - 1] = {
+                  x: mouseX,
+                  y: mouseY,
+                  offsetX: 0,
+                  offsetY: 0,
+               };
+            }
          }
          break;
       case "rect":
@@ -172,6 +234,17 @@ const resizeMove = ({
          break;
       case "ellipse":
          if (direction) ellipseResize({ direction, mouseX, mouseY, shape });
+         break;
+      case "text":
+         if (mouseX > resizeShape.props.x && mouseY > resizeShape.props.y) {
+            shape.props.w = mouseX - shape.props.x;
+            shape.props.fontSize =
+               Math.max(
+                  12, // Minimum size to prevent text from becoming too small
+                  (mouseX - shape.props.x) * 0.2 +
+                     (mouseY - shape.props.y) * 0.3,
+               ) * 0.5;
+         }
          break;
    }
 };

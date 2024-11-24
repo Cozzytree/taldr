@@ -195,20 +195,36 @@ const createNewText = ({
    fSize,
    mouseX,
    mouseY,
+   width,
+   height,
    blurEvent,
 }: {
+   fSize: number;
+   width?: number;
+   height?: number;
    mouseX: number;
    mouseY: number;
-   fSize: number;
    blurEvent: ({ text, w, h }: { text: string; w: number; h: number }) => void;
 }) => {
    const el = document.createElement("div");
    el.style.position = "absolute";
    el.style.top = mouseY + "px";
    el.style.left = mouseX + "px";
+   el.style.minWidth = width ? width + "px" : "fit-content";
+   el.style.height = height ? height + "px" : "fit-content";
    el.style.zIndex = "100";
    el.style.fontSize = fSize + "px";
-   el.classList.add("border-none", "w-fit", "h-fit", "outline-none");
+   el.classList.add(
+      "border-none",
+      "outline-none",
+      "bg-background",
+      "p-2",
+      "flex",
+      "justify-center",
+      "items-center",
+      "text-center",
+      "overflow-y-auto",
+   );
    el.setAttribute("contenteditable", "true");
 
    document.body.append(el);

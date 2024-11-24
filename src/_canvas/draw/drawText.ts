@@ -1,5 +1,5 @@
 import { ShapeProps } from "../canvasTypes";
-import { drawDotsAndRectActive } from "../utils";
+import { dots, drawDotsAndRectActive } from "../utils";
 
 const drawText = ({
    shape,
@@ -39,27 +39,70 @@ const drawText = ({
       context.fillText(text, startX, maxHeight, shape.w);
       maxHeight += shape.fontSize;
    });
-   shape.h = maxHeight - shape.y - shape.fontSize;
+   shape.h = maxHeight - shape.y - tolerance;
 
    context.fill();
    context.closePath();
 
    if (isActive && activeColor) {
-      drawDotsAndRectActive({
-         context,
-         tolerance,
-         x: shape.x,
-         y: shape.y,
+      dots({
+         ctx: context,
+         sides: [
+            {
+               x: shape.x + shape.w + tolerance,
+               y: shape.y + shape.h + tolerance,
+            },
+         ],
          activeColor,
-         width: shape.w,
-         height: shape.h,
-         isMassiveSelected: massiveSelected,
+         shouldFill: true,
       });
+      context.beginPath();
+      context.fillStyle = activeColor;
+      context.lineWidth = 2;
+      context.rect(
+         shape.x - tolerance,
+         shape.y - tolerance,
+         shape.w + tolerance * 2,
+         shape.h + tolerance * 2,
+      );
+      context.stroke();
+      context.closePath();
    }
 
    if (shouldRestore) {
       context.restore();
    }
+};
+
+export const drawTextInsideShape = ({
+   shape,
+   context,
+}: {
+   shape: ShapeProps;
+   context: CanvasRenderingContext2D;
+}) => {
+   if (!shape.text) return;
+
+   const chunks = shape.text.split("\n");
+
+   context.font = `${shape.fontSize}px`;
+   context.fillStyle = shape.stroke;
+   context.textAlign = shape.textAlign;
+
+   const yPoint =
+      shape.y + shape.h * 0.5 - chunks.length * shape.fontSize * 0.5;
+
+   chunks.forEach((c) => {
+      let xPoint;
+      if (shape.textAlign === "center") {
+         xPoint = shape.x + shape.w / 2;
+      } else {
+         xPoint = shape.x;
+      }
+
+      context.fillText(c, xPoint, yPoint, shape.w);
+   });
+   context.fill();
 };
 
 export default drawText;

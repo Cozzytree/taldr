@@ -68,6 +68,9 @@ const drawLine = ({
 
    ctx.moveTo(shape.points[0].x, shape.points[0].y);
 
+   if (shape.endShape) {
+   }
+
    if (tempPoint) {
       ctx.lineTo(tempPoint.x, tempPoint.y);
    } else {

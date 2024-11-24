@@ -25,6 +25,13 @@ export type modes =
    | "ellipse"
    | "hands_free";
 
+export interface connectionInterface {
+   xPer: number;
+   yPer: number;
+   shapeId: string;
+   followPoint: { x: number; y: number };
+}
+
 export interface ShapeProps {
    x: number;
    y: number;
@@ -36,8 +43,8 @@ export interface ShapeProps {
    angle: number;
 
    /* for line */
-   startShape?: string | null;
-   endSHape?: string | null;
+   startShape?: connectionInterface | null;
+   endShape?: connectionInterface | null;
    arrowS?: boolean;
    arrowE?: boolean;
 

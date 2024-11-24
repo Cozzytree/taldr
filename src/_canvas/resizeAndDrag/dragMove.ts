@@ -1,13 +1,16 @@
 import { CanvasShape } from "../canvasTypes";
+import { connectionOfShapes } from "./line_connection";
 
 const dragMove = ({
+   shape,
    mouseX,
    mouseY,
-   shape,
+   allShapes,
 }: {
    mouseX: number;
    mouseY: number;
    shape: CanvasShape;
+   allShapes: CanvasShape[];
 }) => {
    if (!shape) return;
    switch (shape.type) {
@@ -34,6 +37,11 @@ const dragMove = ({
       default:
          shape.props.x = mouseX - shape.props.offsetX;
          shape.props.y = mouseY - shape.props.offsetY;
+
+         /* for resize */
+         // if (shape.props.connectedTo.length) {
+         //    connectionOfShapes({ allShapes, shape });
+         // }
          break;
    }
 };

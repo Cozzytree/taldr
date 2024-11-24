@@ -1,5 +1,6 @@
 import { ShapeProps } from "../canvasTypes";
 import { drawDotsAndRectActive } from "../utils";
+import { drawTextInsideShape } from "./drawText";
 
 export function rectDraw({
    rect,
@@ -18,7 +19,8 @@ export function rectDraw({
    massiveSelected?: boolean;
    context: CanvasRenderingContext2D;
 }) {
-   const { x, y, w, h, fill, dash, stroke, lineWidth, radius } = rect;
+   const { x, y, w, h, fill, dash, stroke, lineWidth, radius, text, fontSize } =
+      rect;
    const path = new Path2D();
    context.beginPath();
 
@@ -50,9 +52,24 @@ export function rectDraw({
    context.stroke(path);
    context.closePath();
 
+   /* render textI */
+   drawTextInsideShape({ context, shape: rect });
+   // context.fillStyle = stroke;
+   // context.textAlign = "center";
+   // context.font = `${fontSize}px Arial`;
+   // if (text.length) {
+   //    const chunks = text.split("\n");
+   //    let maxH = y + h * 0.5 - chunks.length * fontSize * 0.5 + 2 * tolerance;
+   //    chunks.forEach((c) => {
+   //       context.fillText(c, x + w / 2, maxH, w);
+   //       maxH += fontSize;
+   //    });
+   // }
+   // context.fill();
+
    if (isActive && activeColor) {
       drawDotsAndRectActive({
-         isMassiveSelected: massiveSelected,
+         isMassiveSelected: !!massiveSelected,
          activeColor,
          tolerance,
          context,

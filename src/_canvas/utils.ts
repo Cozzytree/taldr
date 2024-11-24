@@ -1,4 +1,5 @@
 import { CanvasShape } from "./canvasTypes";
+import { v4 as uuidv4 } from "uuid";
 
 const drawDotsAndRectActive = ({
    x,
@@ -190,11 +191,132 @@ const getOffsets = ({
    }
 };
 
+const duplicateShape = ({ shape }: { shape: CanvasShape }) => {
+   if (!shape) return;
+   const padding = 20;
+
+   const newShape: CanvasShape = JSON.parse(JSON.stringify(shape));
+   newShape.props.connectedTo = [];
+
+   newShape.props.x = newShape.props.x + padding;
+   newShape.props.y = newShape.props.y + padding;
+
+   if (newShape.type === "line") {
+      newShape.props.startShape = null;
+      newShape.props.endShape = null;
+   }
+
+   /* adjust points */
+   if (newShape.type === "pencil" || newShape.type === "line") {
+      newShape.props.points?.forEach((p) => {
+         p.x = p.x + padding;
+         p.y = p.y + padding;
+      });
+   }
+
+   newShape.id = uuidv4();
+   return newShape;
+};
+
+const getClosestPointOnSphere = ({
+   sphere,
+   point,
+}: {
+   sphere: { x: number; y: number; xRadius: number; yRadius: number };
+   point: { x: number; y: number };
+}) => {
+   const dx = point.x - sphere.x;
+   const dy = point.y - sphere.y;
+   const dist = Math.sqrt(dx * dx + dy * dy);
+   const closestX = sphere.x + (dx / dist) * sphere.xRadius;
+   const closestY = sphere.y + (dy / dist) * sphere.yRadius;
+   return { x: closestX, y: closestY };
+};
+
+const getClosestPoints = ({
+   rect,
+   point,
+}: {
+   rect: { x: number; y: number; w: number; h: number };
+   point: { x: number; y: number };
+}) => {
+   const closestX = Math.max(rect.x, Math.min(point.x, rect.x + rect.w));
+   const closestY = Math.max(rect.y, Math.min(point.y, rect.y + rect.h));
+   return { x: closestX, y: closestY };
+};
+
+const intersectLineWithBox = (
+   x1: number,
+   y1: number,
+   x2: number,
+   y2: number,
+   xmin: number,
+   xmax: number,
+   ymin: number,
+   ymax: number,
+) => {
+   const intersections = [];
+
+   // Calculate direction of the line
+   const dx = x2 - x1;
+   const dy = y2 - y1;
+
+   // Check for intersection with the left vertical edge (x = xmin)
+   if (dx !== 0) {
+      const tLeft = (xmin - x1) / dx;
+      if (tLeft >= 0 && tLeft <= 1) {
+         const yIntersection = y1 + tLeft * dy;
+         if (yIntersection >= ymin && yIntersection <= ymax) {
+            intersections.push([xmin, yIntersection]);
+         }
+      }
+   }
+
+   // Check for intersection with the right vertical edge (x = xmax)
+   if (dx !== 0) {
+      const tRight = (xmax - x1) / dx;
+      if (tRight >= 0 && tRight <= 1) {
+         const yIntersection = y1 + tRight * dy;
+         if (yIntersection >= ymin && yIntersection <= ymax) {
+            intersections.push([xmax, yIntersection]);
+         }
+      }
+   }
+
+   // Check for intersection with the bottom horizontal edge (y = ymin)
+   if (dy !== 0) {
+      const tBottom = (ymin - y1) / dy;
+      if (tBottom >= 0 && tBottom <= 1) {
+         const xIntersection = x1 + tBottom * dx;
+         if (xIntersection >= xmin && xIntersection <= xmax) {
+            intersections.push([xIntersection, ymin]);
+         }
+      }
+   }
+
+   // Check for intersection with the top horizontal edge (y = ymax)
+   if (dy !== 0) {
+      const tTop = (ymax - y1) / dy;
+      if (tTop >= 0 && tTop <= 1) {
+         const xIntersection = x1 + tTop * dx;
+         if (xIntersection >= xmin && xIntersection <= xmax) {
+            intersections.push([xIntersection, ymax]);
+         }
+      }
+   }
+
+   return intersections;
+};
+
 export {
    dots,
    isInside,
    getOffsets,
+   duplicateShape,
    reEvaluateShape,
+   getClosestPoints,
+   intersectLineWithBox,
    drawDotsAndRectActive,
+   getClosestPointOnSphere,
    adjustWithandHeightPoints,
 };
