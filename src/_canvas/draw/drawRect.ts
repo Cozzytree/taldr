@@ -50,22 +50,11 @@ export function rectDraw({
 
    context.fill(path);
    context.stroke(path);
+   context.setLineDash([0, 0]);
    context.closePath();
 
    /* render textI */
    drawTextInsideShape({ context, shape: rect });
-   // context.fillStyle = stroke;
-   // context.textAlign = "center";
-   // context.font = `${fontSize}px Arial`;
-   // if (text.length) {
-   //    const chunks = text.split("\n");
-   //    let maxH = y + h * 0.5 - chunks.length * fontSize * 0.5 + 2 * tolerance;
-   //    chunks.forEach((c) => {
-   //       context.fillText(c, x + w / 2, maxH, w);
-   //       maxH += fontSize;
-   //    });
-   // }
-   // context.fill();
 
    if (isActive && activeColor) {
       drawDotsAndRectActive({

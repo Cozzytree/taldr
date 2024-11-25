@@ -1,5 +1,5 @@
 import { CanvasShape } from "../canvasTypes";
-import { connectionOfShapes } from "./line_connection";
+import { findConnectionAndMove } from "./line_connection";
 
 const dragMove = ({
    shape,
@@ -17,6 +17,7 @@ const dragMove = ({
       case "ellipse":
          shape.props.x = mouseX - shape.props.offsetX;
          shape.props.y = mouseY - shape.props.offsetY;
+         findConnectionAndMove({ allShapes, shape });
          break;
       case "line":
          shape.props.points?.forEach((p) => {
@@ -25,6 +26,7 @@ const dragMove = ({
          });
          shape.props.x = mouseX - shape.props.offsetX;
          shape.props.y = mouseY - shape.props.offsetY;
+
          break;
       case "pencil":
          shape.props.points?.forEach((p) => {
@@ -33,15 +35,16 @@ const dragMove = ({
          });
          shape.props.x = mouseX - shape.props.offsetX;
          shape.props.y = mouseY - shape.props.offsetY;
+
+         findConnectionAndMove({ allShapes, shape });
+
          break;
       default:
          shape.props.x = mouseX - shape.props.offsetX;
          shape.props.y = mouseY - shape.props.offsetY;
 
-         /* for resize */
-         // if (shape.props.connectedTo.length) {
-         //    connectionOfShapes({ allShapes, shape });
-         // }
+         findConnectionAndMove({ allShapes, shape });
+
          break;
    }
 };

@@ -19,6 +19,7 @@ const drawEllipse = ({
    ctx: CanvasRenderingContext2D;
 }) => {
    ctx.beginPath();
+   ctx.setLineDash(shape.dash);
 
    ctx.fillStyle = shape.fill;
    ctx.strokeStyle = shape.stroke;
@@ -39,6 +40,7 @@ const drawEllipse = ({
    ctx.fill();
    ctx.stroke();
    ctx.closePath();
+   ctx.setLineDash([0, 0]);
 
    if (isActive && activeColor) {
       drawDotsAndRectActive({

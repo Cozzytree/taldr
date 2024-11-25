@@ -65,11 +65,9 @@ const drawLine = ({
    ctx.beginPath();
    ctx.strokeStyle = shape.stroke;
    ctx.lineWidth = shape.lineWidth;
+   ctx.setLineDash(shape.dash);
 
    ctx.moveTo(shape.points[0].x, shape.points[0].y);
-
-   if (shape.endShape) {
-   }
 
    if (tempPoint) {
       ctx.lineTo(tempPoint.x, tempPoint.y);
@@ -77,6 +75,7 @@ const drawLine = ({
       ctx.lineTo(shape.points[1].x, shape.points[1].y);
    }
 
+   ctx.setLineDash([0, 0]);
    ctx.stroke();
    ctx.closePath();
 
@@ -87,7 +86,8 @@ const drawLine = ({
          arrowLinght: 10,
          ctx,
       });
-   } else {
+   }
+   if (shape.arrowS) {
       drawArrows({
          startPoint: tempPoint ? tempPoint : shape.points[1],
          endPoint: shape.points[0],
@@ -106,18 +106,52 @@ const drawLine = ({
          activeColor,
          shouldFill: true,
       });
-      ctx.beginPath();
-      ctx.setLineDash([10, 10]);
-      ctx.strokeStyle = activeColor;
-      ctx.lineWidth = 2;
-      ctx.rect(
-         shape.x - tolerance,
-         shape.y - tolerance,
-         shape.w + 2 * tolerance,
-         shape.h + 2 * tolerance,
-      );
-      ctx.stroke();
-      ctx.closePath();
+
+      if (shape.startShape) {
+         ctx.setLineDash([5, 5]);
+         ctx.lineWidth = 1.5;
+
+         ctx.moveTo(shape.points[0].x, shape.points[0].y);
+         ctx.lineTo(
+            shape.startShape.followPoint.x,
+            shape.startShape.followPoint.y,
+         );
+
+         ctx.fillStyle = "red";
+         ctx.arc(
+            shape.startShape.followPoint.x,
+            shape.startShape.followPoint.y,
+            4,
+            0,
+            2 * Math.PI,
+         );
+         ctx.fill();
+         ctx.stroke();
+         ctx.setLineDash([]);
+      }
+
+      if (shape.endShape) {
+         ctx.fillStyle = "red";
+         ctx.setLineDash([5, 5]);
+         ctx.lineWidth = 1.5;
+
+         ctx.moveTo(
+            shape.points[shape.points.length - 1].x,
+            shape.points[shape.points.length - 1].y,
+         );
+         ctx.lineTo(shape.endShape.followPoint.x, shape.endShape.followPoint.y);
+
+         ctx.arc(
+            shape.endShape.followPoint.x,
+            shape.endShape.followPoint.y,
+            4,
+            0,
+            2 * Math.PI,
+         );
+         ctx.fill();
+         ctx.stroke();
+         ctx.setLineDash([]);
+      }
    }
 
    if (shouldRestore) {

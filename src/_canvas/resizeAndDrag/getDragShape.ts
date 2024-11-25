@@ -1,5 +1,5 @@
 import { CanvasShape } from "../canvasTypes";
-import { isInside } from "../utils";
+import { isInside, slope } from "../utils";
 
 const getDragShape = ({
    shape,
@@ -11,6 +11,18 @@ const getDragShape = ({
    shape: CanvasShape;
 }) => {
    switch (shape.type) {
+      case "line":
+         if (!shape.props.points) return;
+         if (
+            mouseX > shape.props.x &&
+            mouseX < shape.props.x + shape.props.w &&
+            mouseY > shape.props.y &&
+            mouseY < shape.props.y + shape.props.h &&
+            slope({ mouseX, mouseY, points: shape.props.points })
+         ) {
+            return true;
+         }
+         break;
       case "ellipse":
          if (
             isInside({

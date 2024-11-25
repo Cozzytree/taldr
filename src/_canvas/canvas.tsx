@@ -3,11 +3,13 @@ import CanvasClass from "./canvasClass";
 import ChangeModes from "./_components/changeModes";
 import { modes } from "./canvasTypes";
 import { cConf } from "./canvasConfig";
+import CanvasOptions from "./_components/canvasOptions";
 
 const Canvas = () => {
    const canvasRef = useRef<HTMLCanvasElement>(null);
    const fallbackCanvasRef = useRef<HTMLCanvasElement>(null);
    const canvas = useRef<CanvasClass | null>(null);
+   const [activeShapes, setActiveShape] = useState(0);
    const [mode, setMode] = useState<modes>("pointer");
 
    useEffect(() => {
@@ -20,7 +22,9 @@ const Canvas = () => {
       const init = new CanvasClass({
          canvas: canvasRef.current,
          fallbackCanvas: fallbackCanvasRef.current,
-         onChange: () => {},
+         onChange: ({ activeShapes, currentMode, shapes }) => {
+            setActiveShape(activeShapes.size);
+         },
          afterNewShape: ({ mode, shape }) => {
             setMode(mode);
          },
@@ -43,6 +47,9 @@ const Canvas = () => {
                setMode(mode);
             }}
          />
+
+         {activeShapes > 0 && <CanvasOptions canvas={canvas} />}
+
          <canvas
             className="absolute top-0 left-0 bg-background"
             ref={fallbackCanvasRef}

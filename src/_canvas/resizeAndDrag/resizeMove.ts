@@ -1,6 +1,6 @@
 import { CanvasShape, ResizeDirection } from "../canvasTypes";
 import { getClosestPoints, intersectLineWithBox } from "../utils";
-import { lineConnection } from "./line_connection";
+import { findConnectionAndMove, lineConnection } from "./line_connection";
 
 const rectResizemove = ({
    mouseX,
@@ -161,7 +161,11 @@ const resizeMove = ({
                point: { x: mouseX, y: mouseY },
             });
 
-            if (p !== null && shapes[p].id !== shape.id) {
+            if (
+               p !== null &&
+               shapes[p].id !== shape.id &&
+               shapes[p].type !== "line"
+            ) {
                /* intersection points */
                const i = intersectLineWithBox(
                   shape.props.points[shape.props.points.length - 1].x,
@@ -197,7 +201,11 @@ const resizeMove = ({
                point: { x: mouseX, y: mouseY },
             });
 
-            if (p !== null && shapes[p].id !== shape.id) {
+            if (
+               p !== null &&
+               shapes[p].id !== shape.id &&
+               shapes[p].type !== "line"
+            ) {
                /* intersection points */
                const i = intersectLineWithBox(
                   shape.props.points[0].x,
@@ -229,11 +237,16 @@ const resizeMove = ({
          }
          break;
       case "rect":
-         if (direction)
+         if (direction) {
             rectResizemove({ direction, mouseX, mouseY, resizeShape, shape });
+            findConnectionAndMove({ allShapes: shapes, shape });
+         }
          break;
       case "ellipse":
-         if (direction) ellipseResize({ direction, mouseX, mouseY, shape });
+         if (direction) {
+            ellipseResize({ direction, mouseX, mouseY, shape });
+            findConnectionAndMove({ allShapes: shapes, shape });
+         }
          break;
       case "text":
          if (mouseX > resizeShape.props.x && mouseY > resizeShape.props.y) {
@@ -244,6 +257,8 @@ const resizeMove = ({
                   (mouseX - shape.props.x) * 0.2 +
                      (mouseY - shape.props.y) * 0.3,
                ) * 0.5;
+
+            findConnectionAndMove({ allShapes: shapes, shape });
          }
          break;
    }

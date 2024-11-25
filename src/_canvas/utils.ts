@@ -1,6 +1,27 @@
 import { CanvasShape } from "./canvasTypes";
 import { v4 as uuidv4 } from "uuid";
 
+export const fontSizes = [
+   { label: "XL", size: 20 },
+   { label: "L", size: 18 },
+   { label: "M", size: 16 },
+   { label: "S", size: 14 },
+   { label: "XS", size: 10 },
+];
+
+export const colors = [
+   "#F4A300", // Golden yellow
+   "#D32F2F", // Red
+   "#1976D2", // Blue
+   "#388E3C", // Green
+   "#8E24AA", // Purple
+   "#0288D170", // Sky blue
+   "#FBC02D70", // Yellow
+   "#7B1FA2", // Violet
+   "#0097A7", // Teal
+   "#FF5722", // Orange
+];
+
 const drawDotsAndRectActive = ({
    x,
    y,
@@ -101,7 +122,7 @@ const adjustWithandHeightPoints = ({
    return { x, y, width: maxX - x, height: maxY - y };
 };
 
-const reEvaluateShape = (shape: CanvasShape) => {
+const reEvaluateShape = (shape: CanvasShape, allShapes: CanvasShape[]) => {
    if (!shape) return;
    switch (shape.type) {
       case "ellipse":
@@ -135,6 +156,21 @@ const reEvaluateShape = (shape: CanvasShape) => {
       default:
          shape.props.w = Math.max(shape.props.w, 20);
          shape.props.h = Math.max(shape.props.h, 20);
+
+         allShapes.forEach((s, i) => {
+            if (!s || s.type !== "line") return;
+            if (s.props.startShape) {
+               if (s.props.startShape.shapeId === shape.id) {
+                  reEvaluateShape(allShapes[i], allShapes);
+               }
+            }
+            if (s.props.endShape) {
+               if (s.props.endShape.shapeId === shape.id) {
+                  reEvaluateShape(allShapes[i], allShapes);
+               }
+            }
+         });
+
          break;
    }
 };
@@ -308,8 +344,32 @@ const intersectLineWithBox = (
    return intersections;
 };
 
+const slope = ({
+   mouseX,
+   mouseY,
+   points,
+}: {
+   mouseX: number;
+   mouseY: number;
+   points: { x: number; y: number }[];
+}) => {
+   const pa = points[0];
+   const pb = points[1];
+
+   // const lineSlope = pb.y - pa.y / pb.x - pa.x;
+
+   // Calculate the slope between the mouse position and each point
+   const slopeMouseA = (mouseY - pa.y) / (mouseX - pa.x);
+   const slopeMouseB = (mouseY - pb.y) / (mouseX - pb.x);
+   if (Math.abs(slopeMouseA - slopeMouseB) <= 1) {
+      return true;
+   }
+   return false;
+};
+
 export {
    dots,
+   slope,
    isInside,
    getOffsets,
    duplicateShape,
