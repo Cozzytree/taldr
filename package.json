@@ -10,9 +10,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@clerk/clerk-react": "^5.17.0",
     "@radix-ui/react-dropdown-menu": "^2.1.2",
     "@radix-ui/react-menubar": "^1.1.2",
     "@radix-ui/react-slot": "^1.1.0",
+    "@tanstack/react-router": "^1.82.12",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "lucide-react": "^0.460.0",

@@ -1,5 +1,6 @@
 import { ShapeProps } from "../canvasTypes";
 import { drawDotsAndRectActive } from "../utils";
+import { drawTextInsideShape } from "./drawText";
 
 const drawEllipse = ({
    ctx,
@@ -41,6 +42,9 @@ const drawEllipse = ({
    ctx.stroke();
    ctx.closePath();
    ctx.setLineDash([0, 0]);
+
+   /* render textI */
+   drawTextInsideShape({ context: ctx, shape });
 
    if (isActive && activeColor) {
       drawDotsAndRectActive({

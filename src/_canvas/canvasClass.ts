@@ -1,26 +1,27 @@
 import { v4 as uuidv4 } from "uuid";
-import DefaultShape, { cConf } from "./canvasConfig";
-import { CanvasShape, modes, ResizeDirection, shapeType } from "./canvasTypes";
-import { drawEllipse } from "./draw/drawEllipse";
-import { drawLine } from "./draw/drawline";
-import { rectDraw } from "./draw/drawRect";
-import drawText from "./draw/drawText";
 import {
    buildingNewShape,
    buildShape,
    createNewText,
    intializeShape,
 } from "./newShape";
-import { getResizeShape } from "./resizeAndDrag/getResizeshape";
-import { resizeMove } from "./resizeAndDrag/resizeMove";
-import { duplicateShape, getOffsets, reEvaluateShape } from "./utils";
-import { getDragShape } from "./resizeAndDrag/getDragShape";
-import { dragMove } from "./resizeAndDrag/dragMove";
-import { drawPencil } from "./draw/drawPencil";
-import { addTextToShape } from "./add_text_shape";
-import { ShapesIcon } from "lucide-react";
+import drawText from "./draw/drawText";
+import { Bin, Restore } from "./redoundo";
+import { drawLine } from "./draw/drawline";
+import { rectDraw } from "./draw/drawRect";
 import { createGuide } from "./showGuides";
+import { drawPencil } from "./draw/drawPencil";
+import { drawEllipse } from "./draw/drawEllipse";
+import { addTextToShape } from "./add_text_shape";
+import { dragMove } from "./resizeAndDrag/dragMove";
+import DefaultShape, { cConf } from "./canvasConfig";
+import { resizeMove } from "./resizeAndDrag/resizeMove";
+import { getDragShape } from "./resizeAndDrag/getDragShape";
+import { getResizeShape } from "./resizeAndDrag/getResizeshape";
 import { lineConnection } from "./resizeAndDrag/line_connection";
+import { duplicateShape, getOffsets, isInside, reEvaluateShape } from "./utils";
+import { CanvasShape, modes, ResizeDirection, shapeType } from "./canvasTypes";
+import { checkShapeInsideSelection, selectonDrawRect } from "./selection";
 
 interface onChangeProps {
    shapes: CanvasShape[];
@@ -42,12 +43,16 @@ interface contructProps {
 }
 
 class CanvasClass {
+   currentMousePosition = { x: 0, y: 0 };
    canvasShapes: CanvasShape[] = [];
+   emptyIndexes: number[] = [];
+   copies: string[] = [];
+
    newShapeParams: null | CanvasShape = null;
    shapeGuides: Map<string, { x: number; y: number; w: number; h: number }> =
       new Map();
    activeColor = "#20ff20";
-   tolerance = 5;
+   tolerance = 4;
    dragShape: number | undefined = undefined;
    resizeShape:
       | {
@@ -65,6 +70,8 @@ class CanvasClass {
       offsetX: 0,
       offsetY: 0,
       isSelected: false,
+      isSelecting: false,
+      isSelectedDown: false,
    };
 
    canvas: HTMLCanvasElement;
@@ -127,6 +134,8 @@ class CanvasClass {
       this.clearRect(this.ctx, window.innerHeight, window.innerWidth);
 
       this.canvasShapes.forEach((shape) => {
+         if (!shape) return;
+
          const isActive = cConf.activeShapes.has(shape.id);
          switch (shape.type) {
             case "rect":
@@ -192,6 +201,33 @@ class CanvasClass {
    mouse_Down(e: PointerEvent) {
       const { x: mouseX, y: mouseY } = this.getTransformedMouseCoords(e);
 
+      if (this.multipleSelection.isSelected) {
+         if (
+            isInside({
+               inner: { x: mouseX, y: mouseY, w: 0, h: 0 },
+               outer: {
+                  x: this.multipleSelection.x,
+                  y: this.multipleSelection.y,
+                  w: this.multipleSelection.width,
+                  h: this.multipleSelection.height,
+               },
+            })
+         ) {
+            this.canvasShapes.forEach((s) => {
+               if (!s || !cConf.activeShapes.has(s.id)) return;
+               getOffsets({ mouseX, mouseY, shape: s });
+            });
+            this.multipleSelection.isSelectedDown = true;
+            this.multipleSelection.offsetX = mouseX - this.multipleSelection.x;
+            this.multipleSelection.offsetY = mouseY - this.multipleSelection.y;
+            return;
+         } else {
+            this.multipleSelection.isSelected = false;
+            this.multipleSelection.isSelecting = false;
+            this.multipleSelection.isSelectedDown = false;
+         }
+      }
+
       if (cConf.currMode !== "pointer") {
          this.newShapeParams = intializeShape({
             initialPoint: { x: mouseX, y: mouseY },
@@ -205,9 +241,9 @@ class CanvasClass {
       /* resize shape */
       for (let index = 0; index < this.canvasShapes.length; index++) {
          if (
-            !this.canvasShapes[index]
-            // ||
-            // !cConf.activeShapes.get(this.canvasShapes[index].id)
+            !this.canvasShapes[index] ||
+            (this.canvasShapes[index].type !== "text" &&
+               !cConf.activeShapes.get(this.canvasShapes[index].id))
          )
             continue;
 
@@ -222,6 +258,11 @@ class CanvasClass {
          if (direction) {
             this.resizeShape = { index: index, shape, direction };
             isResizeorDrag = true;
+            /* add to bin */
+            Bin.push({
+               type: "common",
+               shapes: [shape],
+            });
             break;
          }
       }
@@ -242,6 +283,12 @@ class CanvasClass {
             this.dragShape = index;
             isResizeorDrag = true;
 
+            /* add to bin */
+            Bin.push({
+               type: "common",
+               shapes: [JSON.parse(JSON.stringify(this.canvasShapes[index]))],
+            });
+
             /* get offset */
             getOffsets({ mouseX, mouseY, shape: this.canvasShapes[index] });
 
@@ -254,11 +301,66 @@ class CanvasClass {
          return;
       }
 
+      /* start massive selection */
+      this.multipleSelection.isSelecting = true;
+      this.multipleSelection.x = mouseX;
+      this.multipleSelection.y = mouseY;
+
       this.draw();
    }
 
    mouse_Move(e: MouseEvent) {
       const { x: mouseX, y: mouseY } = this.getTransformedMouseCoords(e);
+      this.currentMousePosition = { x: mouseX, y: mouseY };
+
+      if (this.multipleSelection.isSelectedDown) {
+         this.multipleSelection.x = mouseX - this.multipleSelection.offsetX;
+         this.multipleSelection.y = mouseY - this.multipleSelection.offsetY;
+
+         this.clearRect(
+            this.fallbackContext,
+            this.fallbackCanvas.width,
+            this.fallbackCanvas.height,
+         );
+         selectonDrawRect({
+            ctx: this.fallbackContext,
+            params: {
+               x: this.multipleSelection.x,
+               y: this.multipleSelection.y,
+               w: this.multipleSelection.width,
+               h: this.multipleSelection.height,
+            },
+         });
+
+         this.canvasShapes.forEach((s) => {
+            if (!s || !cConf.activeShapes.has(s.id)) return;
+            dragMove({
+               allShapes: this.canvasShapes,
+               mouseX,
+               mouseY,
+               shape: s,
+            });
+         });
+         this.draw();
+         return;
+      }
+
+      if (this.multipleSelection.isSelecting) {
+         this.clearRect(
+            this.fallbackContext,
+            this.fallbackCanvas.width,
+            this.fallbackCanvas.height,
+         );
+         selectonDrawRect({
+            ctx: this.fallbackContext,
+            params: {
+               x: this.multipleSelection.x,
+               y: this.multipleSelection.y,
+               w: mouseX - this.multipleSelection.x,
+               h: mouseY - this.multipleSelection.y,
+            },
+         });
+      }
 
       if (this.newShapeParams) {
          this.clearRect(
@@ -305,10 +407,85 @@ class CanvasClass {
 
    mouse_Up(e: PointerEvent) {
       const { x: mouseX, y: mouseY } = this.getTransformedMouseCoords(e);
+
+      if (this.multipleSelection.isSelected) {
+         this.multipleSelection.isSelectedDown = false;
+         this.canvasShapes.forEach((s) => {
+            if (!s || !cConf.activeShapes.has(s.id)) return;
+            reEvaluateShape(s, this.canvasShapes);
+         });
+
+         this.clearRect(
+            this.fallbackContext,
+            this.fallbackCanvas.width,
+            this.fallbackCanvas.height,
+         );
+         selectonDrawRect({
+            ctx: this.fallbackContext,
+            params: {
+               x: this.multipleSelection.x,
+               y: this.multipleSelection.y,
+               w: this.multipleSelection.width,
+               h: this.multipleSelection.height,
+            },
+         });
+
+         this.draw();
+         return;
+      }
+
+      if (this.multipleSelection.isSelecting) {
+         if (mouseX > this.multipleSelection.x) {
+            this.multipleSelection.width = mouseX - this.multipleSelection.x;
+         } else {
+            this.multipleSelection.width = this.multipleSelection.x - mouseX;
+            this.multipleSelection.x = mouseX;
+         }
+
+         if (mouseY > this.multipleSelection.y) {
+            this.multipleSelection.height = mouseY - this.multipleSelection.y;
+         } else {
+            this.multipleSelection.height = this.multipleSelection.y - mouseY;
+            this.multipleSelection.y = mouseY;
+         }
+
+         const { x, y, w, h } = checkShapeInsideSelection({
+            allShapes: this.canvasShapes,
+            selection: {
+               x: this.multipleSelection.x,
+               y: this.multipleSelection.y,
+               w: this.multipleSelection.width,
+               h: this.multipleSelection.height,
+            },
+         });
+
+         /* massive selection rect */
+         this.multipleSelection.isSelecting = false;
+         if (w > 20 && h > 20) {
+            this.multipleSelection.isSelected = true;
+            this.clearRect(
+               this.fallbackContext,
+               this.fallbackCanvas.width,
+               this.fallbackCanvas.height,
+            );
+            selectonDrawRect({
+               ctx: this.fallbackContext,
+               params: { x, y, w, h },
+            });
+            this.draw();
+            return;
+         }
+      }
+
       /* inset shape */
       if (this.newShapeParams) {
          buildShape({ mouseX, mouseY, shape: this.newShapeParams });
-         this.canvasShapes.push(this.newShapeParams);
+
+         this.findEmptyIndexAndInsert(this.newShapeParams);
+         // this.canvasShapes.push(this.newShapeParams);
+
+         /* add to bin */
+         Bin.push({ type: "fresh", shapes: [this.newShapeParams] });
          /* update mode after new shape */
          if (this.newShapeParams.type !== "pencil") {
             cConf.currMode = "pointer";
@@ -319,17 +496,6 @@ class CanvasClass {
          this.afterNewShape({
             mode: cConf.currMode,
             shape: this.newShapeParams,
-         });
-
-         /* insert to guides */
-         this.insertShapeGuide({
-            id: this.newShapeParams.id,
-            v: {
-               x: this.newShapeParams.props.x,
-               y: this.newShapeParams.props.y,
-               w: this.newShapeParams.props.w,
-               h: this.newShapeParams.props.h,
-            },
          });
       }
 
@@ -506,8 +672,13 @@ class CanvasClass {
                   /* delete from actives */
                   cConf.activeShapes.delete(shape.id);
 
-                  this.canvasShapes.push(s);
-                  this.insertShapeGuide({ id: s.id, v: s.props });
+                  this.findEmptyIndexAndInsert(s);
+
+                  /* add to bin */
+                  Bin.push({ type: "fresh", shapes: [s] });
+
+                  // this.canvasShapes.push(s);
+                  // this.insertShapeGuide({ id: s.id, v: s.props });
 
                   /* insert to actives */
                   cConf.activeShapes.set(s.id, true);
@@ -518,10 +689,168 @@ class CanvasClass {
                if (!s) return;
                cConf.activeShapes.set(s.id, true);
             });
+         } else if (e.key === "c") {
+            this.copies = [];
+            this.canvasShapes.forEach((s) => {
+               if (!s) return;
+               if (cConf.activeShapes.has(s.id)) {
+                  const c = { ...s };
+
+                  c.props.offsetX = this.currentMousePosition.x - c.props.x;
+                  c.props.offsetY = this.currentMousePosition.y - c.props.y;
+
+                  this.copies.push(JSON.stringify(c));
+               }
+            });
+         } else if (e.key === "v") {
+            this.copies.forEach((s) => {
+               const c = JSON.parse(s) as CanvasShape;
+               const newId = uuidv4();
+               c.id = newId;
+               c.props.x = this.currentMousePosition.x - c.props.offsetX;
+               c.props.y = this.currentMousePosition.y - c.props.offsetY;
+
+               this.findEmptyIndexAndInsert(c);
+            });
+         } else if (e.key === "z") {
+            const shapes: CanvasShape[] = [];
+            /* get back from bin */
+            const binShapes = Bin.pop();
+
+            if (binShapes) {
+               switch (binShapes.type) {
+                  case "delete":
+                     /* create the shapes */
+                     binShapes.shapes.forEach((s) => {
+                        shapes.push(JSON.parse(JSON.stringify(s)));
+                        this.findEmptyIndexAndInsert(s);
+                     });
+                     break;
+                  case "fresh":
+                     /* delete the shapes */
+                     binShapes.shapes.forEach((s) => {
+                        const v = this.canvasShapes.findIndex(
+                           (c) => c?.id === s.id,
+                        );
+                        if (v !== -1) {
+                           shapes.push(
+                              JSON.parse(JSON.stringify(this.canvasShapes[v])),
+                           );
+                           this.canvasShapes.splice(v, 1);
+                        }
+                     });
+                     break;
+                  case "common":
+                     binShapes.shapes.forEach((s) => {
+                        const v = this.canvasShapes.findIndex(
+                           (v) => v?.id === s.id,
+                        );
+                        if (v !== -1) {
+                           shapes.push(
+                              JSON.parse(JSON.stringify(this.canvasShapes[v])),
+                           );
+                           this.canvasShapes[v] = s;
+                        }
+                     });
+                     break;
+               }
+
+               /* i dont knowwhat to say */
+               Restore.push({ type: binShapes.type, shapes });
+            }
+         } else if (e.key === "y") {
+            const shapes: CanvasShape[] = [];
+            /* revert */
+            const restore = Restore.pop();
+
+            if (restore) {
+               switch (restore.type) {
+                  case "delete":
+                     /* delete the shapes */
+                     restore.shapes.forEach((s) => {
+                        const v = this.canvasShapes.findIndex(
+                           (c) => c?.id === s.id,
+                        );
+                        if (v !== -1) {
+                           shapes.push(
+                              JSON.parse(JSON.stringify(this.canvasShapes[v])),
+                           );
+                           this.canvasShapes.splice(v, 1);
+                        }
+                     });
+                     break;
+                  case "fresh":
+                     /* create the shapes */
+                     restore.shapes.forEach((s) => {
+                        shapes.push(JSON.parse(JSON.stringify(s)));
+                        this.findEmptyIndexAndInsert(s);
+                     });
+                     break;
+                  case "common":
+                     restore.shapes.forEach((s) => {
+                        const v = this.canvasShapes.findIndex(
+                           (v) => v?.id === s.id,
+                        );
+                        if (v !== -1) {
+                           shapes.push(
+                              JSON.parse(JSON.stringify(this.canvasShapes[v])),
+                           );
+                           this.canvasShapes[v] = s;
+                        }
+                     });
+                     break;
+               }
+
+               /* i dont knowwhat to say */
+               Bin.push({ type: restore.type, shapes });
+            }
          }
+      } else if (e.key === "Delete") {
+         const toBin: CanvasShape[] = [];
+
+         this.canvasShapes.forEach((s, index) => {
+            if (!s) return;
+            if (cConf.activeShapes.has(s.id)) {
+               cConf.activeShapes.delete(s.id);
+
+               this.shapeGuides.delete(s.id);
+               toBin.push(JSON.parse(JSON.stringify(s)));
+               // @ts-expect-error //necessary to give null
+               this.canvasShapes[index] = null;
+
+               this.emptyIndexes.push(index);
+            }
+         });
+
+         Bin.push({ type: "delete", shapes: toBin });
       }
 
+      /* change callback */
+      this.onChange({
+         activeShapes: cConf.activeShapes,
+         currentMode: cConf.currMode,
+         shapes: this.canvasShapes,
+      });
       this.reset();
+   }
+
+   findEmptyIndexAndInsert(shape: CanvasShape) {
+      const popped = this.emptyIndexes.pop();
+      if (popped !== undefined) {
+         this.canvasShapes[popped] = shape;
+      } else {
+         this.canvasShapes.push(shape);
+      }
+      /* insert to guides */
+      this.insertShapeGuide({
+         id: shape.id,
+         v: {
+            x: shape.props.x,
+            y: shape.props.y,
+            w: shape.props.w,
+            h: shape.props.h,
+         },
+      });
    }
 
    resizeCanvas() {
@@ -529,6 +858,7 @@ class CanvasClass {
       this.canvas.height = window.innerHeight;
       this.fallbackCanvas.width = window.innerWidth;
       this.fallbackCanvas.height = window.innerHeight;
+      this.draw();
    }
 
    getTransformedMouseCoords(event: MouseEvent) {
@@ -567,7 +897,6 @@ class CanvasClass {
             this.afterNewShape({
                shape: newText,
                mode: cConf.currMode,
-               currentShapes: cConf.activeShapes,
             });
 
             this.canvasShapes.push(newText);
@@ -583,6 +912,8 @@ class CanvasClass {
          this.fallbackCanvas.width,
          this.fallbackCanvas.height,
       );
+      this.fallbackContext.restore();
+
       this.resizeShape = undefined;
       this.dragShape = undefined;
       this.newShapeParams = null;
@@ -632,6 +963,58 @@ class CanvasClass {
       this.fallbackContext.restore();
    }
 
+   zoomAndScroll(e: WheelEvent) {
+      const { x, y } = this.getTransformedMouseCoords(e);
+
+      if (e.ctrlKey) {
+         const midX = this.canvas.width * 0.5;
+         const midY = this.canvas.height * 0.5;
+
+         const xPer = ((x - midX) / midX) * 100;
+         const yPer = ((x - midY) / midY) * 100;
+
+         e.preventDefault();
+         if (e.deltaY > 0) {
+            if (x > midX) {
+               cConf.offset.x += xPer / 10;
+            } else {
+               cConf.offset.x -= xPer / 10;
+            }
+
+            if (y > midY) {
+               cConf.offset.y -= yPer / 10;
+            } else {
+               cConf.offset.y += yPer / 10;
+            }
+
+            cConf.scale.y /= 1.1;
+            cConf.scale.x /= 1.1;
+         } else {
+            if (x > midX) {
+               cConf.offset.x -= xPer / 10;
+            } else {
+               cConf.offset.x += xPer / 10;
+            }
+
+            if (y > midY) {
+               cConf.offset.y += yPer / 10;
+            } else {
+               cConf.offset.y -= yPer / 10;
+            }
+
+            cConf.scale.x *= 1.1;
+            cConf.scale.y *= 1.1;
+         }
+      } else {
+         if (e.deltaY > 0) {
+            cConf.offset.y += 20;
+         } else {
+            cConf.offset.y -= 20;
+         }
+      }
+      this.draw();
+   }
+
    initialize() {
       this.canvas.addEventListener("pointerdown", this.mouse_Down.bind(this));
       this.canvas.addEventListener("pointermove", this.mouse_Move.bind(this));
@@ -640,6 +1023,7 @@ class CanvasClass {
       this.canvas.addEventListener("click", this.mouseClick.bind(this));
       document.addEventListener("keydown", this.documentKeyDown.bind(this));
       window.addEventListener("resize", this.resizeCanvas.bind(this));
+      this.canvas.addEventListener("wheel", this.zoomAndScroll.bind(this));
    }
 
    cleanup() {
@@ -659,6 +1043,7 @@ class CanvasClass {
       );
       document.removeEventListener("keydown", this.documentKeyDown.bind(this));
       window.removeEventListener("resize", this.resizeCanvas.bind(this));
+      this.canvas.removeEventListener("wheel", this.zoomAndScroll.bind(this));
    }
 }
 

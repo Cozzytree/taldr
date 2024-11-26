@@ -1,10 +1,10 @@
 import { Menubar } from "@/components/ui/menubar";
-import FillOption from "./fillOption";
-import CanvasClass from "../canvasClass";
-import { cConf } from "../canvasConfig";
+import FontSizeoption from "./fontsizeOption";
 import Stroke_Option from "./strokeOption";
 import DashedOption from "./dashedOption";
-import FontSizeoption from "./fontsizeOption";
+import CanvasClass from "../canvasClass";
+import { cConf } from "../canvasConfig";
+import FillOption from "./fillOption";
 
 export default function CanvasOptions({
    canvas,
@@ -16,7 +16,10 @@ export default function CanvasOptions({
 
       if (Array.isArray(canvas.current.canvasShapes)) {
          for (let i = 0; i < canvas.current.canvasShapes.length; i++) {
-            if (!cConf.activeShapes.has(canvas.current.canvasShapes[i].id))
+            if (
+               !canvas.current.canvasShapes[i] ||
+               !cConf.activeShapes.has(canvas.current.canvasShapes[i].id)
+            )
                continue;
 
             if (
@@ -39,7 +42,10 @@ export default function CanvasOptions({
 
       if (Array.isArray(canvas.current.canvasShapes)) {
          for (let i = 0; i < canvas.current.canvasShapes.length; i++) {
-            if (!cConf.activeShapes.has(canvas.current.canvasShapes[i].id))
+            if (
+               !canvas.current.canvasShapes[i] ||
+               !cConf.activeShapes.has(canvas.current.canvasShapes[i].id)
+            )
                continue;
 
             canvas.current.canvasShapes[i].props.lineWidth = stroke;
@@ -54,7 +60,10 @@ export default function CanvasOptions({
 
       if (Array.isArray(canvas.current.canvasShapes)) {
          for (let i = 0; i < canvas.current.canvasShapes.length; i++) {
-            if (!cConf.activeShapes.has(canvas.current.canvasShapes[i].id))
+            if (
+               !canvas.current.canvasShapes[i] ||
+               !cConf.activeShapes.has(canvas.current.canvasShapes[i].id)
+            )
                continue;
 
             canvas.current.canvasShapes[i].props.stroke = color;
@@ -69,7 +78,10 @@ export default function CanvasOptions({
 
       if (Array.isArray(canvas.current.canvasShapes)) {
          for (let i = 0; i < canvas.current.canvasShapes.length; i++) {
-            if (!cConf.activeShapes.has(canvas.current.canvasShapes[i].id))
+            if (
+               !canvas.current.canvasShapes[i] ||
+               !cConf.activeShapes.has(canvas.current.canvasShapes[i].id)
+            )
                continue;
 
             canvas.current.canvasShapes[i].props.dash = v;
@@ -84,7 +96,10 @@ export default function CanvasOptions({
 
       if (Array.isArray(canvas.current.canvasShapes)) {
          for (let i = 0; i < canvas.current.canvasShapes.length; i++) {
-            if (!cConf.activeShapes.has(canvas.current.canvasShapes[i].id))
+            if (
+               !canvas.current.canvasShapes[i] ||
+               !cConf.activeShapes.has(canvas.current.canvasShapes[i].id)
+            )
                continue;
 
             canvas.current.canvasShapes[i].props.fontSize = v;

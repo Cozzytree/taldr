@@ -1,4 +1,4 @@
-import DefaultShape from "./canvasConfig";
+import DefaultShape, { cConf } from "./canvasConfig";
 import { v4 as uuidv4 } from "uuid";
 import { CanvasShape, ShapeProps, shapeType } from "./canvasTypes";
 import { rectDraw } from "./draw/drawRect";
@@ -208,10 +208,10 @@ const createNewText = ({
 }) => {
    const el = document.createElement("div");
    el.style.position = "absolute";
-   el.style.top = mouseY + "px";
-   el.style.left = mouseX + "px";
-   el.style.minWidth = width ? width + "px" : "fit-content";
-   el.style.height = height ? height + "px" : "fit-content";
+   el.style.top = mouseY - cConf.offset.y + "px";
+   el.style.left = mouseX - cConf.offset.x + "px";
+   el.style.minWidth = width ? width + "px" : "10px";
+   el.style.minHeight = height ? height + "px" : "10px";
    el.style.zIndex = "100";
    el.style.fontSize = fSize + "px";
    el.classList.add(

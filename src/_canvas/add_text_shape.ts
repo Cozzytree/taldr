@@ -1,3 +1,4 @@
+import { cConf } from "./canvasConfig";
 import { CanvasShape } from "./canvasTypes";
 import { createNewText } from "./newShape";
 import { isInside } from "./utils";

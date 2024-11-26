@@ -83,13 +83,13 @@ export const drawTextInsideShape = ({
 }) => {
    if (!shape.text) return;
 
+   context.beginPath();
    const chunks = shape.text.split("\n");
-
    context.font = `${shape.fontSize}px Arial`;
    context.fillStyle = shape.stroke;
    context.textAlign = shape.textAlign;
 
-   let yPoint = shape.y + shape.h * 0.5 - chunks.length * shape.fontSize * 0.3;
+   let yPoint = shape.y + shape.h * 0.5 - chunks.length;
 
    chunks.forEach((c) => {
       let xPoint;
@@ -100,9 +100,10 @@ export const drawTextInsideShape = ({
       }
 
       context.fillText(c, xPoint, yPoint, shape.w);
-      yPoint += shape.fontSize;
+      yPoint += shape.fontSize * 0.3;
    });
    context.fill();
+   context.closePath();
 };
 
 export default drawText;

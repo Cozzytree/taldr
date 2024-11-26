@@ -1,5 +1,6 @@
 import { ShapeProps } from "../canvasTypes";
 import { dots, drawDotsAndRectActive } from "../utils";
+import { drawTextInsideShape } from "./drawText";
 
 const drawArrows = ({
    startPoint,
@@ -95,6 +96,9 @@ const drawLine = ({
          ctx,
       });
    }
+
+   /* render textI */
+   drawTextInsideShape({ context: ctx, shape });
 
    if (isActive && activeColor) {
       dots({
