@@ -86,7 +86,7 @@ export const drawTextInsideShape = ({
    context.beginPath();
    const chunks = shape.text.split("\n");
    context.font = `${shape.fontSize}px Arial`;
-   context.fillStyle = shape.stroke;
+   context.fillStyle = "white";
    context.textAlign = shape.textAlign;
 
    let yPoint = shape.y + shape.h * 0.5 - chunks.length;

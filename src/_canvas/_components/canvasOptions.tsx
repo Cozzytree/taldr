@@ -5,121 +5,141 @@ import DashedOption from "./dashedOption";
 import CanvasClass from "../canvasClass";
 import { cConf } from "../canvasConfig";
 import FillOption from "./fillOption";
+import RadiusOption from "./radiusOption";
 
 export default function CanvasOptions({
-   canvas,
+  canvas,
 }: {
-   canvas: React.MutableRefObject<CanvasClass | null>;
+  canvas: React.MutableRefObject<CanvasClass | null>;
 }) {
-   const handleColor = (color: string) => {
-      if (!canvas.current || !canvas.current.canvasShapes) return;
+  const handleColor = (color: string) => {
+    if (!canvas.current || !canvas.current.canvasShapes) return;
 
-      if (Array.isArray(canvas.current.canvasShapes)) {
-         for (let i = 0; i < canvas.current.canvasShapes.length; i++) {
-            if (
-               !canvas.current.canvasShapes[i] ||
-               !cConf.activeShapes.has(canvas.current.canvasShapes[i].id)
-            )
-               continue;
+    if (Array.isArray(canvas.current.canvasShapes)) {
+      for (let i = 0; i < canvas.current.canvasShapes.length; i++) {
+        if (
+          !canvas.current.canvasShapes[i] ||
+          !cConf.activeShapes.has(canvas.current.canvasShapes[i].id)
+        )
+          continue;
 
-            if (
-               canvas.current.canvasShapes[i].type === "line" ||
-               canvas.current.canvasShapes[i].type === "pencil" ||
-               canvas.current.canvasShapes[i].type === "text"
-            ) {
-               canvas.current.canvasShapes[i].props.stroke = color;
-            } else {
-               canvas.current.canvasShapes[i].props.fill = color;
-            }
-         }
-
-         canvas.current.draw();
+        if (
+          canvas.current.canvasShapes[i].type === "line" ||
+          canvas.current.canvasShapes[i].type === "pencil" ||
+          canvas.current.canvasShapes[i].type === "text"
+        ) {
+          canvas.current.canvasShapes[i].props.stroke = color;
+        } else {
+          canvas.current.canvasShapes[i].props.fill = color;
+        }
       }
-   };
 
-   const handleStroke = (stroke: number) => {
-      if (!canvas.current || !canvas.current.canvasShapes) return;
+      canvas.current.draw();
+    }
+  };
 
-      if (Array.isArray(canvas.current.canvasShapes)) {
-         for (let i = 0; i < canvas.current.canvasShapes.length; i++) {
-            if (
-               !canvas.current.canvasShapes[i] ||
-               !cConf.activeShapes.has(canvas.current.canvasShapes[i].id)
-            )
-               continue;
+  const handleStroke = (stroke: number) => {
+    if (!canvas.current || !canvas.current.canvasShapes) return;
 
-            canvas.current.canvasShapes[i].props.lineWidth = stroke;
-         }
+    if (Array.isArray(canvas.current.canvasShapes)) {
+      for (let i = 0; i < canvas.current.canvasShapes.length; i++) {
+        if (
+          !canvas.current.canvasShapes[i] ||
+          !cConf.activeShapes.has(canvas.current.canvasShapes[i].id)
+        )
+          continue;
 
-         canvas.current.draw();
+        canvas.current.canvasShapes[i].props.lineWidth = stroke;
       }
-   };
 
-   const handleStrokeColor = (color: string) => {
-      if (!canvas.current || !canvas.current.canvasShapes) return;
+      canvas.current.draw();
+    }
+  };
 
-      if (Array.isArray(canvas.current.canvasShapes)) {
-         for (let i = 0; i < canvas.current.canvasShapes.length; i++) {
-            if (
-               !canvas.current.canvasShapes[i] ||
-               !cConf.activeShapes.has(canvas.current.canvasShapes[i].id)
-            )
-               continue;
+  const handleStrokeColor = (color: string) => {
+    if (!canvas.current || !canvas.current.canvasShapes) return;
 
-            canvas.current.canvasShapes[i].props.stroke = color;
-         }
+    if (Array.isArray(canvas.current.canvasShapes)) {
+      for (let i = 0; i < canvas.current.canvasShapes.length; i++) {
+        if (
+          !canvas.current.canvasShapes[i] ||
+          !cConf.activeShapes.has(canvas.current.canvasShapes[i].id)
+        )
+          continue;
 
-         canvas.current.draw();
+        canvas.current.canvasShapes[i].props.stroke = color;
       }
-   };
 
-   const handleDashed = (v: [number, number]) => {
-      if (!canvas.current || !canvas.current.canvasShapes) return;
+      canvas.current.draw();
+    }
+  };
 
-      if (Array.isArray(canvas.current.canvasShapes)) {
-         for (let i = 0; i < canvas.current.canvasShapes.length; i++) {
-            if (
-               !canvas.current.canvasShapes[i] ||
-               !cConf.activeShapes.has(canvas.current.canvasShapes[i].id)
-            )
-               continue;
+  const handleDashed = (v: [number, number]) => {
+    if (!canvas.current || !canvas.current.canvasShapes) return;
 
-            canvas.current.canvasShapes[i].props.dash = v;
-         }
+    if (Array.isArray(canvas.current.canvasShapes)) {
+      for (let i = 0; i < canvas.current.canvasShapes.length; i++) {
+        if (
+          !canvas.current.canvasShapes[i] ||
+          !cConf.activeShapes.has(canvas.current.canvasShapes[i].id)
+        )
+          continue;
 
-         canvas.current.draw();
+        canvas.current.canvasShapes[i].props.dash = v;
       }
-   };
 
-   const handleFontSize = (v: number) => {
-      if (!canvas.current || !canvas.current.canvasShapes) return;
+      canvas.current.draw();
+    }
+  };
 
-      if (Array.isArray(canvas.current.canvasShapes)) {
-         for (let i = 0; i < canvas.current.canvasShapes.length; i++) {
-            if (
-               !canvas.current.canvasShapes[i] ||
-               !cConf.activeShapes.has(canvas.current.canvasShapes[i].id)
-            )
-               continue;
+  const handleFontSize = (v: number) => {
+    if (!canvas.current || !canvas.current.canvasShapes) return;
 
-            canvas.current.canvasShapes[i].props.fontSize = v;
-         }
+    if (Array.isArray(canvas.current.canvasShapes)) {
+      for (let i = 0; i < canvas.current.canvasShapes.length; i++) {
+        if (
+          !canvas.current.canvasShapes[i] ||
+          !cConf.activeShapes.has(canvas.current.canvasShapes[i].id)
+        )
+          continue;
 
-         canvas.current.draw();
+        canvas.current.canvasShapes[i].props.fontSize = v;
       }
-   };
 
-   return (
-      <div className="fixed z-[100] bottom-10 w-full flex items-center justify-center">
-         <Menubar>
-            <FillOption handleColor={handleColor} />
-            <Stroke_Option
-               handleStroke={handleStroke}
-               handleStrokeColor={handleStrokeColor}
-            />
-            <DashedOption handleDashed={handleDashed} />
-            <FontSizeoption handleFontSize={handleFontSize} />
-         </Menubar>
-      </div>
-   );
+      canvas.current.draw();
+    }
+  };
+
+  const handleRadius = (v: boolean) => {
+    if (!canvas.current || !canvas.current.canvasShapes) return;
+
+    if (Array.isArray(canvas.current.canvasShapes)) {
+      for (let i = 0; i < canvas.current.canvasShapes.length; i++) {
+        if (
+          !canvas.current.canvasShapes[i] ||
+          !cConf.activeShapes.has(canvas.current.canvasShapes[i].id)
+        )
+          continue;
+
+        canvas.current.canvasShapes[i].props.radius = v ? 8 : 0;
+      }
+
+      canvas.current.draw();
+    }
+  };
+
+  return (
+    <div className="fixed z-[100] bottom-10 w-full flex items-center justify-center">
+      <Menubar>
+        <FillOption handleColor={handleColor} />
+        <Stroke_Option
+          handleStroke={handleStroke}
+          handleStrokeColor={handleStrokeColor}
+        />
+        <DashedOption handleDashed={handleDashed} />
+        <FontSizeoption handleFontSize={handleFontSize} />
+        <RadiusOption handleRadius={handleRadius} />
+      </Menubar>
+    </div>
+  );
 }
