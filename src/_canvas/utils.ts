@@ -20,6 +20,7 @@ export const colors = [
   "#7B1FA2", // Violet
   "#0097A7", // Teal
   "#FF5722", // Orange
+  "#FFFFFF",
 ];
 
 const drawDotsAndRectActive = ({
@@ -152,6 +153,30 @@ const reEvaluateShape = (shape: CanvasShape, allShapes: CanvasShape[]) => {
         shape.props.w = width;
         shape.props.h = height;
       }
+      break;
+    case "figure":
+      shape.props.w = Math.max(shape.props.w, 20);
+      shape.props.h = Math.max(shape.props.h, 20);
+      /* check inside figures */
+      allShapes.forEach((s) => {
+        if (!shape || s.id === shape.id) return;
+        if (
+          isInside({
+            inner: { x: s.props.x, y: s.props.y, w: s.props.w, h: s.props.h },
+            outer: {
+              x: shape.props.x,
+              y: shape.props.y,
+              w: shape.props.w,
+              h: shape.props.h,
+            },
+          })
+        ) {
+          s.props.containerId = shape.id;
+        } else if (s.props.containerId === shape.id) {
+          s.props.containerId = undefined;
+        }
+      });
+
       break;
     default:
       shape.props.w = Math.max(shape.props.w, 20);

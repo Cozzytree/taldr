@@ -31,6 +31,7 @@ import { EllipsisVertical, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface workspace {
+  _id?: string;
   name: string;
   userId: string;
   description: string;
@@ -79,6 +80,38 @@ const useCreateWorkspace = () => {
   return { mutate, isLoading };
 };
 
+const useDeleteWorkspace = () => {
+  const queryClient = useQueryClient();
+  const { mutate, isLoading } = useMutation({
+    mutationFn: async ({
+      userId,
+      workspaceId,
+    }: {
+      userId: string;
+      workspaceId: string;
+    }) => {
+      try {
+        const res = await fetch(
+          `${import.meta.env.VITE_API_URL}/delete_workspace/${workspaceId}/${userId}`,
+          {
+            method: "DELETE",
+          },
+        );
+
+        if (!res.ok) throw new Error("error while deleteing");
+
+        return res;
+      } catch (err: any) {
+        throw new Error(err.message || "internal server error");
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries();
+    },
+  });
+  return { mutate, isLoading };
+};
+
 export default function Workspaces() {
   const navigate = useNavigate();
   const [name, setName] = useState("");
@@ -86,6 +119,8 @@ export default function Workspaces() {
   const { user, isLoaded } = useUser();
   const { data, isLoading, refetch } = useGetWorkspaces(user?.id);
   const { mutate, isLoading: creatingWorkspace } = useCreateWorkspace();
+  const { mutate: deleteWorkspace, isLoading: deletingWorkspace } =
+    useDeleteWorkspace();
 
   useEffect(() => {
     if (isLoaded && user?.id) {
@@ -107,12 +142,31 @@ export default function Workspaces() {
 
   const handleCreate = () => {
     if (!user?.id || name == "") return;
-    mutate({
-      name,
-      shapes: [],
-      description,
-      userId: user.id,
-    });
+    mutate(
+      {
+        name,
+        shapes: [],
+        description,
+        userId: user.id,
+      },
+      {
+        onSuccess: () => {
+          refetch();
+        },
+      },
+    );
+  };
+
+  const handleDeleteWorkspace = (id: string | undefined) => {
+    if (!user?.id || !id) return;
+    deleteWorkspace(
+      { userId: user.id, workspaceId: id },
+      {
+        onSuccess: () => {
+          refetch();
+        },
+      },
+    );
   };
 
   return (
@@ -155,7 +209,7 @@ export default function Workspaces() {
                 <div className="w-full flex items-center justify-between">
                   <Link
                     className={`${buttonVariants({ variant: "link", size: "sm" })} text-[1em]`}
-                    href="/workspace/id"
+                    href={`/workspace/${w._id}`}
                   >
                     {w.name}
                   </Link>
@@ -187,6 +241,7 @@ export default function Workspaces() {
                           cancel
                         </AlertDialogCancel>
                         <AlertDialogAction
+                          onClick={() => handleDeleteWorkspace(w._id)}
                           className={`${buttonVariants({ variant: "destructive", size: "sm" })}`}
                         >
                           confirm

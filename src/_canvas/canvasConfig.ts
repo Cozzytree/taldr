@@ -25,6 +25,7 @@ class DefaultShape {
   offsetY: number;
   connectedTo: string[] = [];
   radius: number;
+  fontColor: string;
 
   text: string;
   textAlign: "left" | "center" | "right";
@@ -33,6 +34,8 @@ class DefaultShape {
 
   xRadius?: number;
   yRadius?: number;
+
+  name?: string;
 
   constructor({ x, y }: { x: number; y: number }) {
     this.x = x;
@@ -51,6 +54,7 @@ class DefaultShape {
     this.angle = 0;
     this.offsetX = 0;
     this.offsetY = 0;
+    this.fontColor = "#ffffff";
   }
 }
 

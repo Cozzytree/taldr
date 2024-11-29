@@ -1,5 +1,5 @@
+import { cConf } from "../canvasConfig";
 import { CanvasShape, ResizeDirection } from "../canvasTypes";
-import { getOffsets } from "../utils";
 import { rectResizeParams } from "./resizeParams";
 
 const getResizeShape = ({
@@ -16,6 +16,8 @@ const getResizeShape = ({
   const props = shape.props;
   let conds: { condition: boolean; side: ResizeDirection }[];
   let isShape: { condition: boolean; side: ResizeDirection } | undefined;
+
+  cConf.activeShapes.delete(shape.id);
 
   switch (shape.type) {
     case "line":

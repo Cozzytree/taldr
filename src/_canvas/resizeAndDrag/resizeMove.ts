@@ -1,5 +1,5 @@
 import { CanvasShape, ResizeDirection } from "../canvasTypes";
-import { getClosestPoints, intersectLineWithBox } from "../utils";
+import { intersectLineWithBox } from "../utils";
 import { findConnectionAndMove, lineConnection } from "./line_connection";
 import { lineResize } from "./pointResizeParams";
 
@@ -39,7 +39,7 @@ const rectResizemove = ({
       shape.props.h = y + h - mouseY;
     } else if (mouseY > y + h) {
       shape.props.y = y + h;
-      shape.props.h = mouseY - y + h;
+      shape.props.h = mouseY - (y + h);
     }
   } else if (direction === "bottom-edge") {
     if (mouseY > y) {
@@ -270,6 +270,13 @@ const resizeMove = ({
           direction,
           r_e: resizeShape,
         });
+      break;
+    case "figure":
+      if (direction) {
+        rectResizemove({ direction, mouseX, mouseY, resizeShape, shape });
+        findConnectionAndMove({ allShapes: shapes, shape });
+      }
+      break;
       break;
   }
 };

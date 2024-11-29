@@ -2,14 +2,18 @@ import { Menubar } from "@/components/ui/menubar";
 import FontSizeoption from "./fontsizeOption";
 import Stroke_Option from "./strokeOption";
 import DashedOption from "./dashedOption";
+import RadiusOption from "./radiusOption";
 import CanvasClass from "../canvasClass";
 import { cConf } from "../canvasConfig";
 import FillOption from "./fillOption";
-import RadiusOption from "./radiusOption";
+import { Square } from "lucide-react";
+import TextAlign from "./textalignOption";
 
 export default function CanvasOptions({
   canvas,
+  activesShapes,
 }: {
+  activesShapes: number;
   canvas: React.MutableRefObject<CanvasClass | null>;
 }) {
   const handleColor = (color: string) => {
@@ -25,10 +29,11 @@ export default function CanvasOptions({
 
         if (
           canvas.current.canvasShapes[i].type === "line" ||
-          canvas.current.canvasShapes[i].type === "pencil" ||
-          canvas.current.canvasShapes[i].type === "text"
+          canvas.current.canvasShapes[i].type === "pencil"
         ) {
           canvas.current.canvasShapes[i].props.stroke = color;
+        } else if (canvas.current.canvasShapes[i].type === "text") {
+          canvas.current.canvasShapes[i].props.fontColor = color;
         } else {
           canvas.current.canvasShapes[i].props.fill = color;
         }
@@ -128,18 +133,96 @@ export default function CanvasOptions({
     }
   };
 
+  const handleAlign = (side: "left" | "center" | "right") => {
+    if (!canvas.current || !canvas.current.canvasShapes) return;
+
+    if (Array.isArray(canvas.current.canvasShapes)) {
+      for (let i = 0; i < canvas.current.canvasShapes.length; i++) {
+        if (
+          !canvas.current.canvasShapes[i] ||
+          !cConf.activeShapes.has(canvas.current.canvasShapes[i].id)
+        )
+          continue;
+
+        canvas.current.canvasShapes[i].props.textAlign = side;
+      }
+
+      canvas.current.draw();
+    }
+  };
+
+  const handleIndex = (where: "above" | "bottom") => {
+    if (!canvas.current || !canvas.current.canvasShapes) return;
+
+    let index: number | null = null;
+
+    if (Array.isArray(canvas.current.canvasShapes)) {
+      for (let i = 0; i < canvas.current.canvasShapes.length; i++) {
+        if (!canvas.current.canvasShapes[i]) continue;
+
+        if (cConf.activeShapes.has(canvas.current.canvasShapes[i].id)) {
+          index = i;
+          break;
+        }
+      }
+      if (index != null) {
+        if (where === "above") {
+          [
+            canvas.current.canvasShapes[index],
+            canvas.current.canvasShapes[canvas.current.canvasShapes.length - 1],
+          ] = [
+            canvas.current.canvasShapes[canvas.current.canvasShapes.length - 1],
+            canvas.current.canvasShapes[index],
+          ];
+        } else {
+          [canvas.current.canvasShapes[index], canvas.current.canvasShapes[0]] =
+            [
+              canvas.current.canvasShapes[0],
+              canvas.current.canvasShapes[index],
+            ];
+        }
+        canvas.current.draw();
+      }
+    }
+  };
+
   return (
-    <div className="fixed z-[100] bottom-10 w-full flex items-center justify-center">
+    <div className="fixed z-[100] bottom-10 w-full flex flex-col items-center justify-center">
       <Menubar>
         <FillOption handleColor={handleColor} />
         <Stroke_Option
           handleStroke={handleStroke}
           handleStrokeColor={handleStrokeColor}
         />
-        <DashedOption handleDashed={handleDashed} />
+        {activesShapes === 1 && <DashedOption handleDashed={handleDashed} />}
         <FontSizeoption handleFontSize={handleFontSize} />
         <RadiusOption handleRadius={handleRadius} />
+
+        {/* <Forward /> */}
+
+        {activesShapes > 0 && (
+          <>
+            <div
+              role="button"
+              onClick={() => handleIndex("bottom")}
+              className="flex relative px-2"
+            >
+              <Square />
+              <Square className="absolute top-[0.3em] left-3 bg-background" />
+            </div>
+            <div
+              role="button"
+              onClick={() => handleIndex("above")}
+              className="flex relative px-2"
+            >
+              <Square className="z-20 bg-background" />
+              <Square className="absolute top-[0.3em] left-[0.3em]" />
+            </div>
+          </>
+        )}
       </Menubar>
+
+      {activesShapes === 1 && <TextAlign handleAlign={handleAlign} />}
     </div>
   );
 }

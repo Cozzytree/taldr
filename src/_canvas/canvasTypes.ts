@@ -1,74 +1,79 @@
 export type shapeType =
-   | "rect"
-   | "line"
-   | "ellipse"
-   | "text"
-   | "pencil"
-   | "others";
+  | "rect"
+  | "line"
+  | "ellipse"
+  | "text"
+  | "pencil"
+  | "others"
+  | "figure";
 
 export type ResizeDirection =
-   | "left-edge"
-   | "right-edge"
-   | "top-edge"
-   | "bottom-edge"
-   | "top-left"
-   | "bottom-left"
-   | "top-right"
-   | "bottom-right";
+  | "left-edge"
+  | "right-edge"
+  | "top-edge"
+  | "bottom-edge"
+  | "top-left"
+  | "bottom-left"
+  | "top-right"
+  | "bottom-right";
 
 export type modes =
-   | "pointer"
-   | "pencil"
-   | "text"
-   | "line"
-   | "rect"
-   | "ellipse"
-   | "hands_free";
+  | "pointer"
+  | "pencil"
+  | "text"
+  | "line"
+  | "rect"
+  | "ellipse"
+  | "hands_free"
+  | "figure";
 
 export interface connectionInterface {
-   xPer: number;
-   yPer: number;
-   shapeId: string;
-   followPoint: { x: number; y: number };
+  xPer: number;
+  yPer: number;
+  shapeId: string;
+  followPoint: { x: number; y: number };
 }
 
 export interface ShapeProps {
-   x: number;
-   y: number;
-   w: number;
-   h: number;
-   containerId?: string;
-   connectedTo: string[];
-   radius: number;
-   angle: number;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  containerId?: string;
+  connectedTo: string[];
+  radius: number;
+  angle: number;
 
-   /* for line */
-   startShape?: connectionInterface | null;
-   endShape?: connectionInterface | null;
-   arrowS?: boolean;
-   arrowE?: boolean;
+  name?: string;
 
-   xRadius?: number;
-   yRadius?: number;
+  /* for line */
+  startShape?: connectionInterface | null;
+  endShape?: connectionInterface | null;
+  arrowS?: boolean;
+  arrowE?: boolean;
 
-   text: string;
-   textAlign: "left" | "center" | "right";
-   fontSize: number;
+  xRadius?: number;
+  yRadius?: number;
 
-   points?: { x: number; y: number; offsetX: number; offsetY: number }[];
+  text: string;
+  textAlign: "left" | "center" | "right";
+  fontSize: number;
 
-   /* style */
-   fill: string;
-   stroke: string;
-   dash: [number, number];
-   lineWidth: number;
+  points?: { x: number; y: number; offsetX: number; offsetY: number }[];
 
-   offsetX: number;
-   offsetY: number;
+  /* style */
+  fill: string;
+  stroke: string;
+  dash: [number, number];
+  lineWidth: number;
+  fontColor: string;
+
+  offsetX: number;
+  offsetY: number;
 }
 
 export interface CanvasShape {
-   id: string;
-   type: shapeType;
-   props: ShapeProps;
+  id: string;
+  type: shapeType;
+  props: ShapeProps;
 }
