@@ -39,9 +39,9 @@ interface contructProps {
 class CanvasClass {
   mouseDownPoint = { x: 0, y: 0 };
   currentMousePosition = { x: 0, y: 0 };
-  canvasShapes: CanvasShape[] = [];
+  canvasShapes: CanvasShape[];
   emptyIndexes: number[] = [];
-  copies: string[] = [];
+  copies: string[];
 
   newShapeParams: null | CanvasShape = null;
   shapeGuides: Map<string, { x: number; y: number; w: number; h: number }> =
@@ -57,16 +57,16 @@ class CanvasClass {
       }
     | undefined = undefined;
 
-  multipleSelection = {
-    x: 0,
-    y: 0,
-    width: 0,
-    height: 0,
-    offsetX: 0,
-    offsetY: 0,
-    isSelected: false,
-    isSelecting: false,
-    isSelectedDown: false,
+  multipleSelection: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    offsetX: number;
+    offsetY: number;
+    isSelected: boolean;
+    isSelecting: boolean;
+    isSelectedDown: boolean;
   };
   freeModeIsDown = false;
   initialShapes: CanvasShape[] | undefined;
@@ -95,9 +95,23 @@ class CanvasClass {
     const fallbackContext = this.fallbackCanvas.getContext("2d");
     if (!fallbackContext) throw new Error("canvas not supported");
 
+    this.copies = [];
+    this.canvasShapes = [];
+    this.multipleSelection = {
+      x: 0,
+      y: 0,
+      width: 0,
+      height: 0,
+      offsetX: 0,
+      offsetY: 0,
+      isSelected: false,
+      isSelecting: false,
+      isSelectedDown: false,
+    };
+
     this.ctx = context;
-    this.fallbackContext = fallbackContext;
     this.onChange = onChange;
+    this.fallbackContext = fallbackContext;
     this.updateaftermouseup = updateaftermouseup;
   }
 
@@ -209,8 +223,13 @@ class CanvasClass {
     this.ctx.restore();
   }
 
-  mouse_Down(e: PointerEvent) {
+  mouse_Down(e: PointerEvent | TouchEvent) {
     const { x: mouseX, y: mouseY } = this.getTransformedMouseCoords(e);
+
+    // @ts-expect-error it is necessary
+    if (e.target?.tagName !== "CANVAS") {
+      return;
+    }
 
     if (cConf.currMode === "hands_free") {
       this.mouseDownPoint = { x: mouseX, y: mouseY };
@@ -342,7 +361,7 @@ class CanvasClass {
     // this.draw();
   }
 
-  mouse_Move(e: PointerEvent) {
+  mouse_Move(e: PointerEvent | TouchEvent) {
     const { x: mouseX, y: mouseY } = this.getTransformedMouseCoords(e);
 
     this.currentMousePosition = { x: mouseX, y: mouseY };
@@ -454,8 +473,10 @@ class CanvasClass {
     }
   }
 
-  mouse_Up(e: PointerEvent) {
+  mouse_Up(e: PointerEvent | TouchEvent) {
     const { x: mouseX, y: mouseY } = this.getTransformedMouseCoords(e);
+
+    console.log(e);
 
     if (this.freeModeIsDown) {
       this.freeModeIsDown = false;
@@ -891,21 +912,49 @@ class CanvasClass {
     this.draw();
   }
 
-  getTransformedMouseCoords(event: MouseEvent) {
+  getTransformedMouseCoords(event: PointerEvent | TouchEvent | MouseEvent) {
     const rect = this.canvas.getBoundingClientRect();
     const centerX = this.canvas.width / 2;
     const centerY = this.canvas.height / 2;
 
-    // Adjust for canvas position on the page
-    let mouseX = event.clientX - rect.left;
-    let mouseY = event.clientY - rect.top;
+    // Handle pointer event (mouse or touch)
+    let mouseX, mouseY;
+
+    if (event instanceof PointerEvent || event instanceof MouseEvent) {
+      // Pointer event (mouse)
+      mouseX = event.clientX - rect.left;
+      mouseY = event.clientY - rect.top;
+    } else if (event instanceof TouchEvent) {
+      // Touch event (single touch)
+      const touch = event.touches[0]; // Get the first touch point
+      mouseX = touch?.clientX ?? 0 - rect.left;
+      mouseY = touch?.clientY ?? 0 - rect.top;
+    }
 
     // Adjust for scroll positions and scale
-    mouseX = (mouseX + cConf.offset.x - centerX) / cConf.scale.x + centerX;
-    mouseY = (mouseY + cConf.offset.y - centerY) / cConf.scale.y + centerY;
+    mouseX =
+      ((mouseX ?? 0) + cConf.offset.x - centerX) / cConf.scale.x + centerX;
+    mouseY =
+      ((mouseY ?? 0) + cConf.offset.y - centerY) / cConf.scale.y + centerY;
 
     return { x: mouseX, y: mouseY };
   }
+
+  // getTransformedMouseCoords(event: PointerEvent) {
+  //   const rect = this.canvas.getBoundingClientRect();
+  //   const centerX = this.canvas.width / 2;
+  //   const centerY = this.canvas.height / 2;
+
+  //   // Adjust for canvas position on the page
+  //   let mouseX = event.clientX - rect.left;
+  //   let mouseY = event.clientY - rect.top;
+
+  //   // Adjust for scroll positions and scale
+  //   mouseX = (mouseX + cConf.offset.x - centerX) / cConf.scale.x + centerX;
+  //   mouseY = (mouseY + cConf.offset.y - centerY) / cConf.scale.y + centerY;
+
+  //   return { x: mouseX, y: mouseY };
+  // }
 
   insertText(mouseX: number, mouseY: number) {
     const nt = new DefaultShape({ x: mouseX, y: mouseY });
@@ -1063,9 +1112,16 @@ class CanvasClass {
       });
     }
 
-    this.canvas.addEventListener("pointerdown", this.mouse_Down.bind(this));
-    this.canvas.addEventListener("pointermove", this.mouse_Move.bind(this));
-    this.canvas.addEventListener("pointerup", this.mouse_Up.bind(this));
+    document.addEventListener("pointerdown", this.mouse_Down.bind(this));
+    document.addEventListener("pointermove", this.mouse_Move.bind(this));
+    document.addEventListener("pointerup", this.mouse_Up.bind(this));
+
+    /* touch event */
+    document.addEventListener("touchstart", this.mouse_Down.bind(this));
+    document.addEventListener("touchmove", this.mouse_Move.bind(this));
+    document.addEventListener("touchend", this.mouse_Up.bind(this));
+    document.addEventListener("touchcancel", this.mouse_Up.bind(this));
+
     this.canvas.addEventListener("dblclick", this.mouseDblClick.bind(this));
     this.canvas.addEventListener("click", this.mouseClick.bind(this));
     document.addEventListener("keydown", this.documentKeyDown.bind(this));
@@ -1074,9 +1130,16 @@ class CanvasClass {
   }
 
   cleanup() {
-    this.canvas.removeEventListener("pointerdown", this.mouse_Down.bind(this));
-    this.canvas.removeEventListener("pointermove", this.mouse_Move.bind(this));
-    this.canvas.removeEventListener("pointerup", this.mouse_Up.bind(this));
+    document.removeEventListener("pointerdown", this.mouse_Down.bind(this));
+    document.removeEventListener("pointermove", this.mouse_Move.bind(this));
+    document.removeEventListener("pointerup", this.mouse_Up.bind(this));
+
+    // /* touch event */
+    document.removeEventListener("touchstart", this.mouse_Down.bind(this));
+    document.removeEventListener("touchmove", this.mouse_Move.bind(this));
+    document.removeEventListener("touchend", this.mouse_Up.bind(this));
+    document.removeEventListener("touchcancel", this.mouse_Up.bind(this));
+
     this.canvas.removeEventListener("click", this.mouseClick.bind(this));
     this.canvas.removeEventListener("dblclick", this.mouseDblClick.bind(this));
     document.removeEventListener("keydown", this.documentKeyDown.bind(this));

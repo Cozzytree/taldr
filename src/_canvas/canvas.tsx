@@ -118,73 +118,75 @@ const Canvas = ({
   };
 
   return (
-    <>
-      <ChangeModes
-        currMode={mode}
-        changeMode={(mode) => {
-          cConf.currMode = mode;
-          cConf.activeShapes.clear();
-          setMode(mode);
-        }}
-      />
+    <div id="canvas-div" className={`relative w-full h-screen`}>
+      <main className="w-full h-full">
+        <ChangeModes
+          currMode={mode}
+          changeMode={(mode) => {
+            cConf.currMode = mode;
+            cConf.activeShapes.clear();
+            setMode(mode);
+          }}
+        />
 
-      <Menubar>
-        <MenubarMenu>
-          <MenubarTrigger asChild>
-            <Button
-              className="fixed right-10 top-10 z-[100]"
-              variant={"outline"}
-              size={"sm"}
-            >
-              {(scale * 100).toFixed(0)} %
-            </Button>
-          </MenubarTrigger>
-          <MenubarContent side="left" align="start">
-            <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2">
+        <Menubar>
+          <MenubarMenu>
+            <MenubarTrigger asChild>
               <Button
-                onClick={() => handleZoomInOut(0)}
-                size="sm"
-                variant={"ghost"}
+                className="absolute right-5 top-5 z-[100]"
+                variant={"outline"}
+                size={"sm"}
               >
-                <Minus />
+                {(scale * 100).toFixed(0)} %
               </Button>
-              <span className="w-12"> {(scale * 100).toFixed(0)} %</span>
-              <Button
-                onClick={() => handleZoomInOut(1)}
-                size="sm"
-                variant={"ghost"}
+            </MenubarTrigger>
+            <MenubarContent side="left" align="start">
+              <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2">
+                <Button
+                  onClick={() => handleZoomInOut(0)}
+                  size="sm"
+                  variant={"ghost"}
+                >
+                  <Minus />
+                </Button>
+                <span className="w-12"> {(scale * 100).toFixed(0)} %</span>
+                <Button
+                  onClick={() => handleZoomInOut(1)}
+                  size="sm"
+                  variant={"ghost"}
+                >
+                  <Plus />
+                </Button>
+              </div>
+              <MenubarItem
+                onClick={() => {
+                  if (!canvas.current) return;
+                  if (cConf.offset.x !== 0 || cConf.offset.y !== 0) {
+                    cConf.offset = { x: 0, y: 0 };
+                    canvas.current.draw();
+                  }
+                }}
               >
-                <Plus />
-              </Button>
-            </div>
-            <MenubarItem
-              onClick={() => {
-                if (!canvas.current) return;
-                if (cConf.offset.x !== 0 || cConf.offset.y !== 0) {
-                  cConf.offset = { x: 0, y: 0 };
-                  canvas.current.draw();
-                }
-              }}
-            >
-              Center canvas
-            </MenubarItem>
-          </MenubarContent>
-        </MenubarMenu>
-      </Menubar>
+                Center canvas
+              </MenubarItem>
+            </MenubarContent>
+          </MenubarMenu>
+        </Menubar>
 
-      {activeShapes > 0 && mode !== "hands_free" && (
-        <CanvasOptions canvas={canvas} activesShapes={activeShapes} />
-      )}
+        {activeShapes > 0 && mode !== "hands_free" && (
+          <CanvasOptions canvas={canvas} activesShapes={activeShapes} />
+        )}
 
-      <canvas
-        className="absolute top-0 left-0 bg-background"
-        ref={fallbackCanvasRef}
-      ></canvas>
-      <canvas
-        className="absolute top-0 left-0 bg-transparent z-50"
-        ref={canvasRef}
-      ></canvas>
-    </>
+        <canvas
+          className="absolute top-0 left-0 bg-background transition-all duration-200"
+          ref={fallbackCanvasRef}
+        ></canvas>
+        <canvas
+          className="absolute top-0 left-0 z-50 transition-all duration-200"
+          ref={canvasRef}
+        ></canvas>
+      </main>
+    </div>
   );
 };
 

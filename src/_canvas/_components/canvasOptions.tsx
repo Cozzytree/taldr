@@ -187,19 +187,18 @@ export default function CanvasOptions({
   };
 
   return (
-    <div className="fixed z-[100] bottom-10 w-full flex flex-col items-center justify-center">
+    <div className="absolute z-[100] bottom-20 w-full flex flex-col items-center justify-center">
       <Menubar>
         <FillOption handleColor={handleColor} />
         <Stroke_Option
           handleStroke={handleStroke}
           handleStrokeColor={handleStrokeColor}
         />
-        {activesShapes === 1 && <DashedOption handleDashed={handleDashed} />}
+        {/* {activesShapes <= 1 && <DashedOption handleDashed={handleDashed} />} */}
+        <DashedOption handleDashed={handleDashed} />
         <FontSizeoption handleFontSize={handleFontSize} />
         <RadiusOption handleRadius={handleRadius} />
-
         {/* <Forward /> */}
-
         {activesShapes > 0 && (
           <>
             <div

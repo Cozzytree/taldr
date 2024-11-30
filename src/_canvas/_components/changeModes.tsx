@@ -56,7 +56,7 @@ const ChangeModes = ({
   currMode: modes;
 }) => {
   return (
-    <div className="fixed top-7 left-5 z-[100] flex flex-col rounded-sm">
+    <div className="absolute top-7 left-5 z-[100] flex flex-col rounded-sm">
       {m.map((mode) => (
         <Button
           onClick={() => changeMode(mode.name)}
