@@ -1,39 +1,58 @@
 import { Mode } from "@/lib/utils";
-import React from "react";
+import React, { useState } from "react";
 
 export default function ChangeMode({
-  mode,
-  setMode,
-  children,
+   mode,
+   name,
+   setMode,
+   children,
 }: {
-  mode: Mode;
-  setMode: (m: Mode) => void;
-  children: React.ReactNode;
+   name?: string;
+   mode: Mode;
+   setMode: (m: Mode) => void;
+   children: React.ReactNode;
 }) {
-  return (
-    <div className="grid grid-rows-[auto_1fr] h-screen">
-      <div className="w-full flex justify-center py-1 border border-b-foreground/20">
-        <button
-          onClick={() => setMode("editor")}
-          className={`${mode === "editor" ? "bg-foreground/20" : ""} hover:bg-foreground/10 transition-[background] duration-150 px-2 py-1 border border-foreground/20 text-xs rounded-l-md`}
-        >
-          Editor
-        </button>
-        <button
-          onClick={() => setMode("both")}
-          className={`${mode === "both" ? "bg-foreground/20" : ""} hidden md:block hover:bg-foreground/10 transition-[background] duration-150 px-2 py-1 border border-foreground/20 text-xs`}
-        >
-          Both
-        </button>
-        <button
-          onClick={() => setMode("canvas")}
-          className={`${mode === "canvas" ? "bg-foreground/20" : ""} hover:bg-foreground/10 transition-[background] duration-150 px-2 py-1 border border-foreground/20 text-xs rounded-r-md`}
-        >
-          Canvas
-        </button>
-      </div>
+   const [isFocused, setFocused] = useState(false);
 
-      {children}
-    </div>
-  );
+   return (
+      <div className="grid grid-rows-[auto_1fr] h-screen">
+         <div className="w-full flex justify-center py-1 border border-b-foreground/20 relative">
+            {!isFocused && name ? (
+               <h2
+                  onClick={() => setFocused(true)}
+                  className="absolute left-2 top-1"
+               >
+                  {name}
+               </h2>
+            ) : (
+               <input
+                  className="absolute left-2 top-1 bg-transparent outline-none"
+                  defaultValue={name}
+                  onBlur={() => setFocused(false)}
+               />
+            )}
+
+            <button
+               onClick={() => setMode("editor")}
+               className={`${mode === "editor" ? "bg-foreground/20" : ""} hover:bg-foreground/10 transition-[background] duration-150 px-2 py-1 border border-foreground/20 text-xs rounded-l-md`}
+            >
+               Editor
+            </button>
+            <button
+               onClick={() => setMode("both")}
+               className={`${mode === "both" ? "bg-foreground/20" : ""} hidden md:block hover:bg-foreground/10 transition-[background] duration-150 px-2 py-1 border border-foreground/20 text-xs`}
+            >
+               Both
+            </button>
+            <button
+               onClick={() => setMode("canvas")}
+               className={`${mode === "canvas" ? "bg-foreground/20" : ""} hover:bg-foreground/10 transition-[background] duration-150 px-2 py-1 border border-foreground/20 text-xs rounded-r-md`}
+            >
+               Canvas
+            </button>
+         </div>
+
+         {children}
+      </div>
+   );
 }

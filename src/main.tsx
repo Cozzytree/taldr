@@ -1,13 +1,13 @@
-import { StrictMode } from "react";
+// import { StrictMode } from "react";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.tsx";
 import {
-  createRootRoute,
-  createRoute,
-  createRouter,
-  RouterProvider,
+   createRootRoute,
+   createRoute,
+   createRouter,
+   RouterProvider,
 } from "@tanstack/react-router";
 import Workspaces from "./pages/workspaces.tsx";
 import IndexRoute from "./pages/index_route.tsx";
@@ -20,61 +20,61 @@ import TrialRoute from "./pages/trial_route.tsx";
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
 if (!PUBLISHABLE_KEY) {
-  throw new Error("Missing Publishable Key");
+   throw new Error("Missing Publishable Key");
 }
 
 const rootRoute = createRootRoute({
-  component: () => <App />,
+   component: () => <App />,
 });
 
 const indexRoute = createRoute({
-  path: "/",
-  getParentRoute: () => rootRoute,
-  component: () => <IndexRoute />,
+   path: "/",
+   getParentRoute: () => rootRoute,
+   component: () => <IndexRoute />,
 });
 
 const workspacesRoute = createRoute({
-  path: "/workspaces",
-  getParentRoute: () => rootRoute,
-  component: () => <Workspaces />,
+   path: "/workspaces",
+   getParentRoute: () => rootRoute,
+   component: () => <Workspaces />,
 });
 
 const canvasRoute = createRoute({
-  path: "/workspace/$id",
-  getParentRoute: () => rootRoute,
-  component: () => <WorkspaceCanvas />,
+   path: "/workspace/$id",
+   getParentRoute: () => rootRoute,
+   component: () => <WorkspaceCanvas />,
 });
 
 const trialRoute = createRoute({
-  path: "/trial",
-  getParentRoute: () => rootRoute,
-  component: () => <TrialRoute />,
+   path: "/trial",
+   getParentRoute: () => rootRoute,
+   component: () => <TrialRoute />,
 });
 
 const routeTree = rootRoute.addChildren([
-  indexRoute,
-  workspacesRoute,
-  canvasRoute,
-  trialRoute,
+   indexRoute,
+   workspacesRoute,
+   canvasRoute,
+   trialRoute,
 ]);
 const router = createRouter({ routeTree });
 
 declare module "@tanstack/react-router" {
-  interface Register {
-    router: typeof router;
-  }
+   interface Register {
+      router: typeof router;
+   }
 }
 
 const client = new QueryClient();
 
 createRoot(document.getElementById("root")!).render(
-  // <StrictMode>
-  <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
-    <QueryClientProvider client={client}>
-      <RouterProvider router={router} />
-      <Toaster position="top-right" />
-    </QueryClientProvider>
-  </ClerkProvider>,
+   // <StrictMode>
+   <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+      <QueryClientProvider client={client}>
+         <RouterProvider router={router} />
+         <Toaster position="top-right" />
+      </QueryClientProvider>
+   </ClerkProvider>,
 
-  // </StrictMode>,
+   // </StrictMode>,
 );

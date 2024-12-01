@@ -1,5 +1,5 @@
 import { ShapeProps } from "../canvasTypes";
-import { dots, drawDotsAndRectActive } from "../utils";
+import { dots } from "../utils";
 import { drawTextInsideShape } from "./drawText";
 
 const drawArrows = ({
@@ -48,8 +48,6 @@ const drawLine = ({
    isActive,
    tempPoint,
    activeColor,
-   tolerance = 6,
-   massiveSelected,
    shouldRestore = true,
 }: {
    tolerance?: number;
