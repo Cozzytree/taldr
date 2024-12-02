@@ -75,7 +75,7 @@ export default function WorkspaceCanvas() {
    }, [user, navigate, isLoaded]);
 
    useEffect(() => {
-      socketRef.current = new WebSocket("ws://localhost:8080/ws");
+      socketRef.current = new WebSocket("ws://3.110.176.229:8080/ws");
 
       if (socketRef?.current) {
          socketRef.current.addEventListener("open", () => {

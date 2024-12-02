@@ -61,13 +61,16 @@ const useCreateWorkspace = () => {
    const queryClient = useQueryClient();
    const { mutate, isLoading } = useMutation({
       mutationFn: async (data: workspace) => {
-         const res = await fetch(`http://localhost:8080/new_workspace`, {
-            method: "POST",
-            headers: {
-               "Content-Type": "application/json",
+         const res = await fetch(
+            `${import.meta.env.VITE_API_URL}/new_workspace`,
+            {
+               method: "POST",
+               headers: {
+                  "Content-Type": "application/json",
+               },
+               body: JSON.stringify(data),
             },
-            body: JSON.stringify(data),
-         });
+         );
          if (!res.ok) {
             throw new Error("internnal server error");
          }
