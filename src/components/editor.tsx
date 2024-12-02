@@ -277,15 +277,18 @@ const Editor = ({
    id,
    socket,
    userId,
+   editable = true,
    initialData,
 }: {
    id?: string;
    userId?: string;
+   editable?: boolean;
    initialData?: string;
    socket?: WebSocket | undefined;
 }) => {
    return (
       <EditorProvider
+         editable={editable}
          onTransaction={(data) => {
             if (!userId || !id || !socket) return;
             handleSaveDocument(() => {

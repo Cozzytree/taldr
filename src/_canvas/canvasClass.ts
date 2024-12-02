@@ -29,6 +29,7 @@ interface onChangeProps {
 }
 
 interface contructProps {
+   isEditable: boolean;
    canvas: HTMLCanvasElement;
    fallbackCanvas: HTMLCanvasElement;
    initialShapes: CanvasShape[] | undefined;
@@ -57,6 +58,8 @@ class CanvasClass {
         }
       | undefined;
 
+   isEditable: boolean;
+
    multipleSelection = {
       x: 0,
       y: 0,
@@ -81,6 +84,7 @@ class CanvasClass {
    constructor({
       canvas,
       onChange,
+      isEditable,
       initialShapes,
       updateaftermouseup,
       fallbackCanvas,
@@ -102,6 +106,9 @@ class CanvasClass {
       this.dragShape = undefined;
       this.resizeShape = undefined;
       this.freeModeIsDown = false;
+
+      this.isEditable = isEditable;
+      console.log(isEditable);
 
       this.ctx = context;
       this.onChange = onChange;
@@ -236,6 +243,11 @@ class CanvasClass {
 
    mouse_Down(e: PointerEvent | TouchEvent) {
       const { x: mouseX, y: mouseY } = this.getTransformedMouseCoords(e);
+      if (!this.isEditable) {
+         this.mouseDownPoint = { x: mouseX, y: mouseY };
+         this.freeModeIsDown = true;
+         return;
+      }
 
       // @ts-expect-error it is necessary
       if (e.target?.tagName !== "CANVAS") {
@@ -377,10 +389,7 @@ class CanvasClass {
    }
 
    mouse_Move(e: PointerEvent | TouchEvent) {
-      e.preventDefault();
       const { x: mouseX, y: mouseY } = this.getTransformedMouseCoords(e);
-
-      this.currentMousePosition = { x: mouseX, y: mouseY };
       if (this.freeModeIsDown) {
          if (mouseX > this.mouseDownPoint.x) {
             cConf.offset.x = cConf.offset.x - (mouseX - this.mouseDownPoint.x);
@@ -396,6 +405,12 @@ class CanvasClass {
          this.draw();
          return;
       }
+
+      if (!this.isEditable) return;
+
+      e.preventDefault();
+
+      this.currentMousePosition = { x: mouseX, y: mouseY };
 
       if (this.multipleSelection.isSelectedDown) {
          this.multipleSelection.x = mouseX - this.multipleSelection.offsetX;
@@ -491,6 +506,11 @@ class CanvasClass {
    }
 
    mouse_Up(e: PointerEvent | TouchEvent) {
+      if (!this.isEditable) {
+         this.freeModeIsDown = false;
+         return;
+      }
+
       e.preventDefault();
       const { x: mouseX, y: mouseY } = this.getTransformedMouseCoords(e);
 
@@ -577,8 +597,6 @@ class CanvasClass {
 
          /* add to bin */
          Bin.push({ type: "fresh", shapes: [this.newShapeParams] });
-
-         console.log(this.newShapeParams);
 
          /* update mode after new shape */
          if (this.newShapeParams.type !== "pencil") {
@@ -671,7 +689,6 @@ class CanvasClass {
          }
 
          reEvaluateShape(r_Shape, this.canvasShapes);
-         console.log(r_Shape);
 
          cConf.activeShapes.set(
             this.canvasShapes[this.resizeShape.index].id,
@@ -706,10 +723,15 @@ class CanvasClass {
          currentMode: cConf.currMode,
          activeShapes: cConf.activeShapes,
       });
-      this.updateaftermouseup({ shapes: this.canvasShapes });
+
+      // @ts-expect-error it is necessary
+      if (e.target?.tagName === "CANVAS") {
+         this.updateaftermouseup({ shapes: this.canvasShapes });
+      }
    }
 
    mouseClick(e: MouseEvent) {
+      if (!this.isEditable) return;
       const { x: mouseX, y: mouseY } = this.getTransformedMouseCoords(e);
 
       if (cConf.currMode === "text") {
@@ -719,6 +741,7 @@ class CanvasClass {
    }
 
    mouseDblClick(e: MouseEvent) {
+      if (!this.isEditable) return;
       const { x: mouseX, y: mouseY } = this.getTransformedMouseCoords(e);
 
       /* insert test to shape */
@@ -755,6 +778,7 @@ class CanvasClass {
    }
 
    documentKeyDown(e: KeyboardEvent) {
+      if (!this.isEditable) return;
       if (e.ctrlKey) {
          e.preventDefault();
          if (e.key === "d") {
@@ -899,29 +923,9 @@ class CanvasClass {
             }
          }
       } else if (e.key === "Delete") {
-         // const toBin: CanvasShape[] = [];
-
-         // this.canvasShapes.forEach((s, index) => {
-         //    if (!s) return;
-         //    if (cConf.activeShapes.has(s.id)) {
-         //       if (s.type === "figure") {
-         //          this.canvasShapes.forEach((a, i) => {
-         //             if (s && s.props.containerId === s.id) {
-         //                this.canvasShapes.splice(i, 1);
-         //                toBin.push(JSON.parse(JSON.stringify(a)));
-         //             }
-         //          });
-         //       }
-
-         //       cConf.activeShapes.delete(s.id);
-         //       this.shapeGuides.delete(s.id);
-         //       toBin.push(JSON.parse(JSON.stringify(s)));
-         //       this.canvasShapes.splice(index, 1);
-         //    }
-         // });
          const shapes = this.deleteShapes();
 
-         Bin.push({ type: "delete", shapes });
+         if (shapes) Bin.push({ type: "delete", shapes });
       }
 
       /* change callback */
@@ -933,6 +937,7 @@ class CanvasClass {
    }
 
    deleteShapes() {
+      if (!this.isEditable) return;
       const toBin: CanvasShape[] = [];
       this.canvasShapes.forEach((s, index) => {
          if (!s) return;
@@ -1112,6 +1117,7 @@ class CanvasClass {
          const yPer = ((x - midY) / midY) * 100;
 
          if (e.deltaY > 0) {
+            if (cConf.scale.x <= 0.6) return;
             if (x > midX) {
                cConf.offset.x += xPer / 10;
             } else {
@@ -1127,7 +1133,6 @@ class CanvasClass {
             cConf.scale.y /= 1.1;
             cConf.scale.x /= 1.1;
          } else {
-            if (cConf.scale.x <= 0.6) return;
             if (x > midX) {
                cConf.offset.x -= xPer / 10;
             } else {

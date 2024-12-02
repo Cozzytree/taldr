@@ -27,7 +27,7 @@ import {
 import { useUser } from "@clerk/clerk-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { EllipsisVertical, Plus } from "lucide-react";
+import { EllipsisVertical, Plus, RefreshCcw } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface workspace {
@@ -131,7 +131,7 @@ export default function Workspaces() {
    if (isLoading && !isLoaded) {
       return (
          <div className="min-h-screen w-full flex justify-center items-center">
-            Loading
+            <RefreshCcw className="animate-spin" />
          </div>
       );
    }

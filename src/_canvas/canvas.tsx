@@ -12,14 +12,17 @@ import {
    MenubarTrigger,
 } from "@/components/ui/menubar";
 import { Button } from "@/components/ui/button";
-import { Minus, Plus } from "lucide-react";
+import { Link2, Minus, Plus } from "lucide-react";
+import { toast } from "sonner";
 
 const Canvas = ({
    userId,
    socketRef,
    workspaceId,
    initialShapes,
+   isPreview = false,
 }: {
+   isPreview?: boolean;
    userId?: string;
    workspaceId?: string;
    initialShapes?: CanvasShape[] | undefined;
@@ -42,6 +45,7 @@ const Canvas = ({
 
       const init = new CanvasClass({
          initialShapes,
+         isEditable: !isPreview,
          canvas: canvasRef.current,
          fallbackCanvas: fallbackCanvasRef.current,
          onChange: ({ activeShapes, currentMode }) => {
@@ -97,14 +101,25 @@ const Canvas = ({
    return (
       <div id="canvas-div" className={`relative w-full h-screen`}>
          <main className="w-full h-full">
-            <ChangeModes
-               currMode={mode}
-               changeMode={(mode) => {
-                  cConf.currMode = mode;
-                  cConf.activeShapes.clear();
-                  setMode(mode);
-               }}
-            />
+            {!isPreview && (
+               <>
+                  <ChangeModes
+                     currMode={mode}
+                     changeMode={(mode) => {
+                        cConf.currMode = mode;
+                        cConf.activeShapes.clear();
+                        setMode(mode);
+                     }}
+                  />
+
+                  {activeShapes > 0 && mode !== "hands_free" && (
+                     <CanvasOptions
+                        canvas={canvas}
+                        activesShapes={activeShapes}
+                     />
+                  )}
+               </>
+            )}
 
             <Menubar>
                <MenubarMenu>
@@ -127,7 +142,6 @@ const Canvas = ({
                            <Minus />
                         </Button>
                         <span className="w-12">
-                           {" "}
                            {(scale * 100).toFixed(0)} %
                         </span>
                         <Button
@@ -149,13 +163,31 @@ const Canvas = ({
                      >
                         Center canvas
                      </MenubarItem>
+                     <MenubarItem
+                        onClick={() => {
+                           const link =
+                              import.meta.env.VITE_MODE === "production"
+                                 ? `http://localhost:5173/preview/${workspaceId}`
+                                 : `https://taldr.netlify.app/preview/${workspaceId}`;
+
+                           navigator.clipboard
+                              .writeText(link)
+                              .then(() => {
+                                 toast.success("copied");
+                              })
+                              .catch((err) => {
+                                 toast.error(
+                                    "error while copying link : ",
+                                    err.message,
+                                 );
+                              });
+                        }}
+                     >
+                        <Link2 /> copy link
+                     </MenubarItem>
                   </MenubarContent>
                </MenubarMenu>
             </Menubar>
-
-            {activeShapes > 0 && mode !== "hands_free" && (
-               <CanvasOptions canvas={canvas} activesShapes={activeShapes} />
-            )}
 
             <canvas
                className="absolute top-0 left-0 bg-background transition-all duration-200"

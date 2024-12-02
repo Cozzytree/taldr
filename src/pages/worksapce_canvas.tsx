@@ -15,6 +15,7 @@ const Canvas = lazy(() => import("@/_canvas/canvas"));
 const Editor = lazy(() => import("@/components/editor"));
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { toast } from "sonner";
+import { RefreshCcw } from "lucide-react";
 
 interface Workspace {
    shapes: CanvasShape[];
@@ -94,7 +95,7 @@ export default function WorkspaceCanvas() {
    if (isLoading || !isLoaded) {
       return (
          <div className="w-full h-screen flex justify-center items-center">
-            Loading
+            <RefreshCcw className="animate-spin" />
          </div>
       );
    }
@@ -103,7 +104,7 @@ export default function WorkspaceCanvas() {
       <Suspense
          fallback={
             <div className="min-h-screen w-full text-sm text-foreground/60 flex justify-center items-center">
-               loading...
+               <RefreshCcw className="animate-spin" />
             </div>
          }
       >

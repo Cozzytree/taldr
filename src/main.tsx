@@ -15,6 +15,7 @@ import WorkspaceCanvas from "./pages/worksapce_canvas.tsx";
 import { ClerkProvider } from "@clerk/clerk-react";
 import { Toaster } from "./components/ui/sonner.tsx";
 import TrialRoute from "./pages/trial_route.tsx";
+import Preview from "./pages/preview_route.tsx";
 
 // Import your publishable key
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
@@ -45,6 +46,12 @@ const canvasRoute = createRoute({
    component: () => <WorkspaceCanvas />,
 });
 
+const previewRoute = createRoute({
+   path: "/preview/$id",
+   getParentRoute: () => rootRoute,
+   component: () => <Preview />,
+});
+
 const trialRoute = createRoute({
    path: "/trial",
    getParentRoute: () => rootRoute,
@@ -53,9 +60,10 @@ const trialRoute = createRoute({
 
 const routeTree = rootRoute.addChildren([
    indexRoute,
-   workspacesRoute,
    canvasRoute,
    trialRoute,
+   previewRoute,
+   workspacesRoute,
 ]);
 const router = createRouter({ routeTree });
 
