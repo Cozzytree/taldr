@@ -6,7 +6,7 @@ import { cn, Mode } from "@/lib/utils";
 import ChangeMode from "@/components/changeMode";
 
 export default function TrialRoute() {
-   const [mode, setMode] = useState<Mode>("both");
+   const [mode, setMode] = useState<Mode>("canvas");
 
    return (
       <Suspense

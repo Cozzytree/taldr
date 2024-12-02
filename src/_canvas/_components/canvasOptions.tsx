@@ -6,7 +6,7 @@ import RadiusOption from "./radiusOption";
 import CanvasClass from "../canvasClass";
 import { cConf } from "../canvasConfig";
 import FillOption from "./fillOption";
-import { Square } from "lucide-react";
+import { Square, Trash } from "lucide-react";
 import TextAlign from "./textalignOption";
 
 export default function CanvasOptions({
@@ -225,6 +225,12 @@ export default function CanvasOptions({
                   </div>
                </>
             )}
+            <Trash
+               onClick={() => {
+                  if (!canvas.current) return;
+                  canvas.current.deleteShapes();
+               }}
+            />
          </Menubar>
 
          {activesShapes === 1 && <TextAlign handleAlign={handleAlign} />}

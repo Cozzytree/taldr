@@ -16,17 +16,18 @@ export default function ChangeMode({
 
    return (
       <div className="grid grid-rows-[auto_1fr] h-screen">
-         <div className="w-full flex justify-center py-1 border border-b-foreground/20 relative">
-            {!isFocused && name ? (
+         <div className="flex justify-center py-1 border border-b-foreground/20 relative">
+            {!isFocused ? (
                <h2
                   onClick={() => setFocused(true)}
                   className="absolute left-2 top-1"
                >
-                  {name}
+                  {name || "untitled"}
                </h2>
             ) : (
                <input
-                  className="absolute left-2 top-1 bg-transparent outline-none"
+                  placeholder="name"
+                  className="absolute left-2 top-1 bg-transparent outline-none max-w-16 text-sm text-foreground/70"
                   defaultValue={name}
                   onBlur={() => setFocused(false)}
                />

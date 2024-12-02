@@ -377,6 +377,7 @@ class CanvasClass {
    }
 
    mouse_Move(e: PointerEvent | TouchEvent) {
+      e.preventDefault();
       const { x: mouseX, y: mouseY } = this.getTransformedMouseCoords(e);
 
       this.currentMousePosition = { x: mouseX, y: mouseY };
@@ -490,6 +491,7 @@ class CanvasClass {
    }
 
    mouse_Up(e: PointerEvent | TouchEvent) {
+      e.preventDefault();
       const { x: mouseX, y: mouseY } = this.getTransformedMouseCoords(e);
 
       if (this.freeModeIsDown) {
@@ -575,6 +577,9 @@ class CanvasClass {
 
          /* add to bin */
          Bin.push({ type: "fresh", shapes: [this.newShapeParams] });
+
+         console.log(this.newShapeParams);
+
          /* update mode after new shape */
          if (this.newShapeParams.type !== "pencil") {
             cConf.currMode = "pointer";
@@ -666,6 +671,7 @@ class CanvasClass {
          }
 
          reEvaluateShape(r_Shape, this.canvasShapes);
+         console.log(r_Shape);
 
          cConf.activeShapes.set(
             this.canvasShapes[this.resizeShape.index].id,
@@ -893,28 +899,29 @@ class CanvasClass {
             }
          }
       } else if (e.key === "Delete") {
-         const toBin: CanvasShape[] = [];
+         // const toBin: CanvasShape[] = [];
 
-         this.canvasShapes.forEach((s, index) => {
-            if (!s) return;
-            if (cConf.activeShapes.has(s.id)) {
-               if (s.type === "figure") {
-                  this.canvasShapes.forEach((a, i) => {
-                     if (s && s.props.containerId === s.id) {
-                        this.canvasShapes.splice(i, 1);
-                        toBin.push(JSON.parse(JSON.stringify(a)));
-                     }
-                  });
-               }
+         // this.canvasShapes.forEach((s, index) => {
+         //    if (!s) return;
+         //    if (cConf.activeShapes.has(s.id)) {
+         //       if (s.type === "figure") {
+         //          this.canvasShapes.forEach((a, i) => {
+         //             if (s && s.props.containerId === s.id) {
+         //                this.canvasShapes.splice(i, 1);
+         //                toBin.push(JSON.parse(JSON.stringify(a)));
+         //             }
+         //          });
+         //       }
 
-               cConf.activeShapes.delete(s.id);
-               this.shapeGuides.delete(s.id);
-               toBin.push(JSON.parse(JSON.stringify(s)));
-               this.canvasShapes.splice(index, 1);
-            }
-         });
+         //       cConf.activeShapes.delete(s.id);
+         //       this.shapeGuides.delete(s.id);
+         //       toBin.push(JSON.parse(JSON.stringify(s)));
+         //       this.canvasShapes.splice(index, 1);
+         //    }
+         // });
+         const shapes = this.deleteShapes();
 
-         Bin.push({ type: "delete", shapes: toBin });
+         Bin.push({ type: "delete", shapes });
       }
 
       /* change callback */
@@ -923,6 +930,30 @@ class CanvasClass {
          currentMode: cConf.currMode,
       });
       this.reset();
+   }
+
+   deleteShapes() {
+      const toBin: CanvasShape[] = [];
+      this.canvasShapes.forEach((s, index) => {
+         if (!s) return;
+         if (cConf.activeShapes.has(s.id)) {
+            if (s.type === "figure") {
+               this.canvasShapes.forEach((a, i) => {
+                  if (s && s.props.containerId === s.id) {
+                     this.canvasShapes.splice(i, 1);
+                     toBin.push(JSON.parse(JSON.stringify(a)));
+                  }
+               });
+            }
+
+            cConf.activeShapes.delete(s.id);
+            this.shapeGuides.delete(s.id);
+            toBin.push(JSON.parse(JSON.stringify(s)));
+            this.canvasShapes.splice(index, 1);
+         }
+      });
+
+      return toBin;
    }
 
    findEmptyIndexAndInsert(shape: CanvasShape) {
@@ -1130,16 +1161,20 @@ class CanvasClass {
       cConf.scale = { x: 1, y: 1 };
       cConf.offset = { x: 0, y: 0 };
 
-      // Add event listeners
+      // Add event listeners with passive: false
+      document.addEventListener("touchstart", this.mouse_Down);
+      document.addEventListener("touchmove", this.mouse_Move, {
+         passive: true,
+      });
+      document.addEventListener("touchend", this.mouse_Up, { passive: true });
+      document.addEventListener("touchcancel", this.mouse_Up, {
+         passive: true,
+      });
+
+      // Add pointer event listeners (optional)
       document.addEventListener("pointerdown", this.mouse_Down);
       document.addEventListener("pointermove", this.mouse_Move);
       document.addEventListener("pointerup", this.mouse_Up);
-
-      // Touch event listeners
-      document.addEventListener("touchstart", this.mouse_Down);
-      document.addEventListener("touchmove", this.mouse_Move);
-      document.addEventListener("touchend", this.mouse_Up);
-      document.addEventListener("touchcancel", this.mouse_Up);
 
       // Canvas event listeners
       this.canvas.addEventListener("dblclick", this.mouseDblClick);
@@ -1161,7 +1196,6 @@ class CanvasClass {
       document.removeEventListener("touchstart", this.mouse_Down);
       document.removeEventListener("touchmove", this.mouse_Move);
       document.removeEventListener("touchend", this.mouse_Up);
-      document.removeEventListener("touchcancel", this.mouse_Up);
 
       // Remove canvas event listeners
       this.canvas.removeEventListener("dblclick", this.mouseDblClick);
