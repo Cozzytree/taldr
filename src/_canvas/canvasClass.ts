@@ -38,11 +38,11 @@ interface contructProps {
 
 class CanvasClass {
    // Declare properties to store the bound function references
-   mouseDownPoint: { x: number; y: number };
-   currentMousePosition: { x: number; y: number };
-   canvasShapes: CanvasShape[];
+   mouseDownPoint: { x: number; y: number } = { x: 0, y: 0 };
+   currentMousePosition: { x: number; y: number } = { x: 0, y: 0 };
+   canvasShapes: CanvasShape[] = [];
    emptyIndexes: number[];
-   copies: string[];
+   copies: string[] = [];
 
    newShapeParams: null | CanvasShape;
    shapeGuides: Map<string, { x: number; y: number; w: number; h: number }>;
@@ -57,16 +57,16 @@ class CanvasClass {
         }
       | undefined;
 
-   multipleSelection: {
-      x: number;
-      y: number;
-      width: number;
-      height: number;
-      offsetX: number;
-      offsetY: number;
-      isSelected: boolean;
-      isSelecting: boolean;
-      isSelectedDown: boolean;
+   multipleSelection = {
+      x: 0,
+      y: 0,
+      width: 0,
+      height: 0,
+      offsetX: 0,
+      offsetY: 0,
+      isSelected: false,
+      isSelecting: false,
+      isSelectedDown: false,
    };
    freeModeIsDown: boolean;
    initialShapes: CanvasShape[] | undefined;
@@ -96,22 +96,6 @@ class CanvasClass {
       const fallbackContext = this.fallbackCanvas.getContext("2d");
       if (!fallbackContext) throw new Error("canvas not supported");
 
-      this.copies = [];
-      this.canvasShapes = [];
-      this.multipleSelection = {
-         x: 0,
-         y: 0,
-         width: 0,
-         height: 0,
-         offsetX: 0,
-         offsetY: 0,
-         isSelected: false,
-         isSelecting: false,
-         isSelectedDown: false,
-      };
-
-      this.mouseDownPoint = { x: 0, y: 0 };
-      this.currentMousePosition = { x: 0, y: 0 };
       this.emptyIndexes = [];
       this.newShapeParams = null;
       this.shapeGuides = new Map();
@@ -133,7 +117,7 @@ class CanvasClass {
       this.zoomAndScroll = this.zoomAndScroll.bind(this);
       this.documentKeyDown = this.documentKeyDown.bind(this);
 
-      if (this.initialShapes?.length) {
+      if (this.initialShapes && this.initialShapes.length > 0) {
          initialShapes?.forEach((s) => {
             if (s) {
                this.canvasShapes.push(s);
@@ -736,8 +720,12 @@ class CanvasClass {
       for (let index = 0; index < this.canvasShapes.length; index++) {
          if (!this.canvasShapes[index]) continue;
 
+         const canvasOffsetX = this.canvas.getBoundingClientRect().left;
+         const canvasOffsetY = this.canvas.getBoundingClientRect().top;
          if (
             addTextToShape({
+               canvasOffsetX,
+               canvasOffsetY,
                mouseX,
                mouseY,
                shape: this.canvasShapes[index],
@@ -1135,51 +1123,6 @@ class CanvasClass {
       this.draw();
    }
 
-   // initialize() {
-   //    /* initialize config */
-   //    cConf.activeShapes = new Map();
-   //    cConf.currMode = "pointer";
-   //    cConf.scale = { x: 1, y: 1 };
-   //    cConf.offset = { x: 0, y: 0 };
-
-   //    document.addEventListener("pointerdown", this.mouse_Down.bind(this));
-   //    document.addEventListener("pointermove", this.mouse_Move.bind(this));
-   //    document.addEventListener("pointerup", this.mouse_Up.bind(this));
-
-   //    /* touch event */
-   //    document.addEventListener("touchstart", this.mouse_Down.bind(this));
-   //    document.addEventListener("touchmove", this.mouse_Move.bind(this));
-   //    document.addEventListener("touchend", this.mouse_Up.bind(this));
-   //    document.addEventListener("touchcancel", this.mouse_Up.bind(this));
-
-   //    this.canvas.addEventListener("dblclick", this.mouseDblClick.bind(this));
-   //    this.canvas.addEventListener("click", this.mouseClick.bind(this));
-   //    document.addEventListener("keydown", this.documentKeyDown.bind(this));
-   //    window.addEventListener("resize", this.resizeCanvas.bind(this));
-   //    this.canvas.addEventListener("wheel", this.zoomAndScroll.bind(this));
-   // }
-
-   // cleanup() {
-   //    document.removeEventListener("pointerdown", this.mouse_Down.bind(this));
-   //    document.removeEventListener("pointermove", this.mouse_Move.bind(this));
-   //    document.removeEventListener("pointerup", this.mouse_Up.bind(this));
-
-   //    // /* touch event */
-   //    document.removeEventListener("touchstart", this.mouse_Down.bind(this));
-   //    document.removeEventListener("touchmove", this.mouse_Move.bind(this));
-   //    document.removeEventListener("touchend", this.mouse_Up.bind(this));
-   //    document.removeEventListener("touchcancel", this.mouse_Up.bind(this));
-
-   //    this.canvas.removeEventListener("click", this.mouseClick.bind(this));
-   //    this.canvas.removeEventListener(
-   //       "dblclick",
-   //       this.mouseDblClick.bind(this),
-   //    );
-   //    document.removeEventListener("keydown", this.documentKeyDown.bind(this));
-   //    window.removeEventListener("resize", this.resizeCanvas.bind(this));
-   //    this.canvas.removeEventListener("wheel", this.zoomAndScroll.bind(this));
-   // }
-
    initialize() {
       /* initialize config */
       cConf.activeShapes = new Map();
@@ -1229,6 +1172,30 @@ class CanvasClass {
       window.removeEventListener("resize", this.resizeCanvas);
       this.canvas.removeEventListener("wheel", this.zoomAndScroll);
    }
+   // cleanup() {
+   //    // Remove event listeners using the stored references
+   //    document.removeEventListener("pointerdown", this.mouse_Down.bind(this));
+   //    document.removeEventListener("pointermove", this.mouse_Move.bind(this));
+   //    document.removeEventListener("pointerup", this.mouse_Up.bind(this));
+
+   //    // Remove touch event listeners
+   //    document.removeEventListener("touchstart", this.mouse_Down.bind(this));
+   //    document.removeEventListener("touchmove", this.mouse_Move.bind(this));
+   //    document.removeEventListener("touchend", this.mouse_Up.bind(this));
+   //    document.removeEventListener("touchcancel", this.mouse_Up.bind(this));
+
+   //    // Remove canvas event listeners
+   //    this.canvas.removeEventListener(
+   //       "dblclick",
+   //       this.mouseDblClick.bind(this),
+   //    );
+   //    this.canvas.removeEventListener("click", this.mouseClick.bind(this));
+
+   //    // Remove global document and window listeners
+   //    document.removeEventListener("keydown", this.documentKeyDown.bind(this));
+   //    window.removeEventListener("resize", this.resizeCanvas.bind(this));
+   //    this.canvas.removeEventListener("wheel", this.zoomAndScroll.bind(this));
+   // }
 }
 
 export default CanvasClass;

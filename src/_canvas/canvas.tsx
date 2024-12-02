@@ -27,7 +27,7 @@ const Canvas = ({
 }) => {
    const canvasRef = useRef<HTMLCanvasElement>(null);
    const fallbackCanvasRef = useRef<HTMLCanvasElement>(null);
-   const canvas = useRef<CanvasClass | null>(null);
+   const canvas = useRef<CanvasClass | null>();
    const [activeShapes, setActiveShape] = useState(0);
    const [mode, setMode] = useState<modes>("pointer");
    const [scale, setScale] = useState(cConf.scale.x);
@@ -72,15 +72,10 @@ const Canvas = ({
       init.draw();
 
       return () => {
+         init.draw();
          init.cleanup(); // Ensure CanvasClass is properly cleaned up
-         if (canvas.current) {
-            canvas.current = null; // Clear reference to CanvasClass
-         }
-         if (socketRef && socketRef.readyState === WebSocket.OPEN) {
-            socketRef.close(); // Close WebSocket connection if needed
-         }
       };
-   }, [initialShapes, workspaceId, userId, socketRef]);
+   }, [workspaceId, userId, socketRef]);
 
    const handleZoomInOut = (val: number) => {
       if (!canvas.current) return;

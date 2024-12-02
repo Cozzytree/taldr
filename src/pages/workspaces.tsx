@@ -44,7 +44,7 @@ const useGetWorkspaces = (userId: string | undefined) => {
          if (!userId) throw new Error("invalid user");
 
          const res = await fetch(
-            `http://localhost:8080/user_workspaces/${userId}`,
+            `${import.meta.env.VITE_API_URL}/user_workspaces/${userId}`,
          );
          if (!res.ok) {
             throw new Error("unknow error");

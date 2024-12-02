@@ -34,7 +34,7 @@ const useGetShapes = (workspaceId: string) => {
       setloading(true);
       try {
          const res = await fetch(
-            `http://localhost:8080/workspace_data/${workspaceId}`,
+            `${import.meta.env.VITE_API_URL}/workspace_data/${workspaceId}`,
             {
                method: "GET",
             },
@@ -81,7 +81,7 @@ export default function WorkspaceCanvas() {
             toast.success("connected");
          });
 
-         socketRef.current.addEventListener("message", (data) => {
+         socketRef.current.addEventListener("message", () => {
             // console.log("data ", JSON.parse(data.data));
          });
       }
