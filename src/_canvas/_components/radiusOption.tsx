@@ -1,34 +1,22 @@
-import {
-  MenubarContent,
-  MenubarMenu,
-  MenubarTrigger,
-} from "@/components/ui/menubar";
-import { Square } from "lucide-react";
-
 export default function RadiusOption({
-  handleRadius,
+   handleRadius,
 }: {
-  handleRadius: (v: boolean) => void;
+   handleRadius: (v: boolean) => void;
 }) {
-  return (
-    <MenubarMenu>
-      <MenubarTrigger>
-        <Square />
-      </MenubarTrigger>
-      <MenubarContent
-        side="top"
-        align="center"
-        className="flex gap-2 items-center"
-      >
-        <div
-          onClick={() => handleRadius(true)}
-          className="w-5 h-5 rounded-md border-2 border-foreground"
-        />
-        <div
-          onClick={() => handleRadius(false)}
-          className="w-5 h-5 rounded-none border-2 border-foreground"
-        />
-      </MenubarContent>
-    </MenubarMenu>
-  );
+   return (
+      <div className="flex gap-2 items-center">
+         <button
+             size={"sm"}
+             variant={"ghost"}
+            onClick={() => handleRadius(true)}
+            className="rounded-md border-2 border-foreground w-5 h-5"
+         />
+         <button
+             size={"sm"}
+             variant={"ghost"}
+            onClick={() => handleRadius(false)}
+            className="rounded-none border-2 border-foreground w-5 h-5"
+         />
+      </div>
+   );
 }

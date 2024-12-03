@@ -112,12 +112,7 @@ const Canvas = ({
                      }}
                   />
 
-                  {activeShapes > 0 && mode !== "hands_free" && (
-                     <CanvasOptions
-                        canvas={canvas}
-                        activesShapes={activeShapes}
-                     />
-                  )}
+                  <CanvasOptions canvas={canvas} activesShapes={activeShapes} />
                </>
             )}
 
@@ -125,7 +120,7 @@ const Canvas = ({
                <MenubarMenu>
                   <MenubarTrigger asChild>
                      <Button
-                        className="absolute right-5 top-5 z-[100]"
+                        className="absolute left-[50%] top-2 z-[100]"
                         variant={"outline"}
                         size={"sm"}
                      >

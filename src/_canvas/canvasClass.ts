@@ -108,7 +108,6 @@ class CanvasClass {
       this.freeModeIsDown = false;
 
       this.isEditable = isEditable;
-      console.log(isEditable);
 
       this.ctx = context;
       this.onChange = onChange;
@@ -160,6 +159,16 @@ class CanvasClass {
 
       this.canvasShapes.forEach((shape) => {
          if (!shape) return;
+         if (
+            shape.props.x - cConf.offset.x <= 0 ||
+            shape.props.x + shape.props.h - cConf.offset.x > this.canvas.width
+         )
+            return;
+         if (
+            shape.props.y - cConf.offset.y <= 0 ||
+            shape.props.y + shape.props.h - cConf.offset.y > this.canvas.height
+         )
+            return;
 
          const isActive = cConf.activeShapes.has(shape.id);
          switch (shape.type) {

@@ -21,7 +21,7 @@ export default function Stroke_Option({
          <MenubarTrigger>
             <Minus />
          </MenubarTrigger>
-         <MenubarContent side="top" align="center" className="flex flex-col">
+         <MenubarContent side="left" align="center" className="flex flex-col">
             <MenubarSub>
                <MenubarSubTrigger>color</MenubarSubTrigger>
                <MenubarSubContent

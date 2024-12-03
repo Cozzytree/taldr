@@ -56,22 +56,24 @@ const ChangeModes = ({
    currMode: modes;
 }) => {
    return (
-      <div className="absolute top-7 left-5 z-[100] flex flex-col rounded-sm">
-         {m.map((mode) => (
-            <Button
-               onClick={() => changeMode(mode.name)}
-               key={mode.name}
-               size="sm"
-               className={cn(
-                  "w-5 h-7 sm:w-8 sm:h-8 focus:outline-0 outline-0 hover:bg-foreground/10 hover:text-foreground",
-                  currMode === mode.name
-                     ? "bg-foreground"
-                     : "bg-background text-foreground",
-               )}
-            >
-               <mode.icon />
-            </Button>
-         ))}
+      <div className="w-full flex justify-center absolute bottom-16 z-[100]">
+         <div className="flex">
+            {m.map((mode) => (
+               <Button
+                  onClick={() => changeMode(mode.name)}
+                  key={mode.name}
+                  size="sm"
+                  className={cn(
+                     "w-5 h-7 sm:w-8 sm:h-8 focus:outline-0 outline-0 hover:bg-foreground/10 hover:text-foreground",
+                     currMode === mode.name
+                        ? "bg-foreground"
+                        : "bg-background text-foreground",
+                  )}
+               >
+                  <mode.icon />
+               </Button>
+            ))}
+         </div>
       </div>
    );
 };

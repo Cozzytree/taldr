@@ -1,48 +1,38 @@
-import {
-   MenubarContent,
-   MenubarMenu,
-   MenubarTrigger,
-} from "@/components/ui/menubar";
-import { Square } from "lucide-react";
 import { colors } from "../utils";
 
 export default function FillOption({
    handleColor,
+   handleStrokeColor
 }: {
+   handleStrokeColor: (v : string) => void;
    handleColor: (v: string) => void;
 }) {
    return (
-      <MenubarMenu>
-         <MenubarTrigger>
-            <Square />
-         </MenubarTrigger>
-         <MenubarContent
-            className="grid grid-cols-4 gap-1 w-fit"
-            side="top"
-            align="center"
-         >
-            {colors.map((c) => (
-               <button
-                  onClick={() => handleColor(c)}
-                  key={c}
-                  style={{ background: c }}
-                  className={`bg-[${c}] w-3 h-3 sm:h-5 sm:w-5 rounded-sm`}
-               />
-            ))}
-
-            <label
-               htmlFor="custom-color"
-               className="h-5 w-5 rounded-sm bg-gradient-to-r from-red-700 to-green-600"
-            />
-            <input
-               onChange={(e) => {
-                  handleColor(e.target.value);
+      <div className="w-full grid grid-cols-4 gap-2 w-fit place-items-center">
+         {colors.map((c) => (
+            <button
+               onClick={() => {
+                   handleColor(c)
+                   handleStrokeColor(c)
                }}
-               className="hidden"
-               type="color"
-               id="custom-color"
+               key={c}
+               style={{ background: c }}
+               className={`bg-[${c}] w-4 h-4 rounded-full`}
             />
-         </MenubarContent>
-      </MenubarMenu>
+         ))}
+
+         <label
+            htmlFor="custom-color"
+            className="w-4 h-4 rounded-full bg-gradient-to-r from-red-700 to-green-600"
+         />
+         <input
+            onChange={(e) => {
+               handleColor(e.target.value);
+            }}
+            className="hidden"
+            type="color"
+            id="custom-color"
+         />
+      </div>
    );
 }

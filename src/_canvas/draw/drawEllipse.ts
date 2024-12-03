@@ -48,13 +48,13 @@ const drawEllipse = ({
 
    if (isActive && activeColor) {
       drawDotsAndRectActive({
-         context: ctx,
-         activeColor,
          tolerance,
+         activeColor,
+         context: ctx,
+         width: shape.w,
+         height: shape.h,
          x: shape.x - (shape.xRadius ?? 0),
          y: shape.y - (shape.yRadius ?? 0),
-         height: shape.h,
-         width: shape.w,
          isMassiveSelected: !!massiveSelected,
       });
    }
