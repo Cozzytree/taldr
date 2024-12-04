@@ -4,9 +4,10 @@ import { cConf } from "../canvasConfig";
 import FillOption from "./fillOption";
 import { Square, Trash } from "lucide-react";
 import TextAlign from "./textalignOption";
-import React, {useState} from "react";
+import {useState} from "react";
 import OpacityOptions from "@/_canvas/_components/opacityOptions.tsx";
 import LineandradiusOption from "@/_canvas/_components/lineandradiusOption.tsx";
+import ConvertShape from "@/_canvas/_components/convertShape.tsx";
 
 export default function CanvasOptions({
    canvas,
@@ -245,10 +246,10 @@ export default function CanvasOptions({
    };
 
    return (
-      <div className="max-w-[10em] absolute z-[100] top-0 right-0 bg-foreground/5 px-2 py-4 rounded-md flex flex-col gap-3">
-            <FillOption handleColor={handleColor} handleStrokeColor={handleStrokeColor}/>
+     <>
+        <FillOption handleColor={handleColor} handleStrokeColor={handleStrokeColor}/>
 
-          <div className={"w-full b-1 border border-foreground/10 mt-1 mb-1"}/>
+            <div className={"w-full b-1 border border-foreground/10 mt-1 mb-1"}/>
 
             <OpacityOptions
                 setOpac={setCurrentOpac}
@@ -287,9 +288,9 @@ export default function CanvasOptions({
                    </div>
                    <TextAlign handleAlign={handleAlign}/>
 
-                   {/*<ConvertShape />*/}
+                   <ConvertShape canvas={canvas}/>
                 </div>
             )}
-      </div>
+        </>
    );
 }

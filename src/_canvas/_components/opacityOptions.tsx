@@ -7,14 +7,12 @@ const OpacityOptions = ({ setOpac, handlecoloropac} : {
 ) => {
     return (
         <div className={"w-full grid grid-cols-4 px-2"}>
-            {opacities.map((opac : opacs, i) =>
+            {opacities.map((o , i) =>
                 <button onClick={() => {
-                    handlecoloropac(opac)
-                    setOpac(opac)
+                    handlecoloropac(o as opacs)
+                    setOpac(o as opacs)
                 }}
-                  size={"sm"}
-                  variant={"outline"}
-                  className={`border border-foreground/20 bg-foreground/${100 * opac} rounded-sm w-5 h-5`} key={i}
+                  className={`border border-foreground/20 bg-foreground/${100 * o} rounded-sm w-5 h-5`} key={i}
                 />
             )}
         </div>

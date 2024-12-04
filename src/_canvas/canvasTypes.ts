@@ -7,7 +7,8 @@ export type shapeType =
    | "others"
    | "figure"
    | "image"
-   | "triangle";
+   | "triangle"
+   | "path";
 
 export type ResizeDirection =
    | "left-edge"
@@ -72,6 +73,9 @@ export interface ShapeProps {
 
    offsetX: number;
    offsetY: number;
+
+   iteration?: number;
+   inset? : number;
 }
 
 export interface CanvasShape {

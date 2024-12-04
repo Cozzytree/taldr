@@ -102,25 +102,30 @@ const Canvas = ({
       <div id="canvas-div" className={`relative w-full h-screen`}>
          <main className="w-full h-full">
             {!isPreview && (
-               <>
-                  <ChangeModes
-                     currMode={mode}
-                     changeMode={(mode) => {
-                        cConf.currMode = mode;
-                        cConf.activeShapes.clear();
-                        setMode(mode);
-                     }}
-                  />
+              <>
+                 <ChangeModes
+                   canvas={canvas}
+                   activeShapes={activeShapes}
+                   currMode={mode}
+                   changeMode={(mode) => {
+                      cConf.currMode = mode;
+                      cConf.activeShapes.clear();
+                      setMode(mode);
+                   }}
+                 />
 
-                  <CanvasOptions canvas={canvas} activesShapes={activeShapes} />
-               </>
-            )}
+                 <div
+                   className="hidden md:flex max-w-[10em] absolute z-[100] top-0 right-0 bg-foreground/5 px-2 py-4 rounded-md flex-col gap-3">
+                    <CanvasOptions canvas={canvas} activesShapes={activeShapes}/>
+                 </div>
+              </>
+              )}
 
-            <Menubar>
-               <MenubarMenu>
-                  <MenubarTrigger asChild>
-                     <Button
-                        className="absolute left-[50%] top-2 z-[100]"
+              <Menubar>
+                 <MenubarMenu>
+                    <MenubarTrigger asChild>
+                       <Button
+                         className="absolute left-[50%] top-2 z-[100]"
                         variant={"outline"}
                         size={"sm"}
                      >

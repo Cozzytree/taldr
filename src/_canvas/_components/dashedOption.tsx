@@ -1,4 +1,4 @@
-import {Circle, Square, SquareDashed, SquareDashedIcon} from "lucide-react";
+import {Circle, SquareDashed, SquareDashedIcon} from "lucide-react";
 
 export default function DashedOption({
    handleDashed,

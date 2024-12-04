@@ -277,6 +277,16 @@ const resizeMove = ({
         findConnectionAndMove({ allShapes: shapes, shape });
       }
       break;
+    case "triangle":
+      if (direction) {
+        rectResizemove({ direction, mouseX, mouseY, resizeShape, shape });
+        findConnectionAndMove({ allShapes: shapes, shape });
+      }
+      break;
+    case "others":
+      shape.props.xRadius = mouseX > shape.props.x ?
+        mouseX - shape.props.x : shape.props.x - mouseX;
+      findConnectionAndMove({ allShapes: shapes, shape });
       break;
   }
 };

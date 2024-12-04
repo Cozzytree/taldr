@@ -4,7 +4,7 @@ export default function FontSizeoption({
    handleFontSize,
    handleLineWidth
 }: {
-   handleLineWidth: (v : number) => number;
+   handleLineWidth: (stroke : number) => void;
    handleFontSize: (v: number) => void;
 }) {
    return (

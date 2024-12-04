@@ -22,6 +22,8 @@ import { lineConnection } from "./resizeAndDrag/line_connection";
 import { duplicateShape, getOffsets, isInside, reEvaluateShape } from "./utils";
 import { CanvasShape, modes, ResizeDirection, shapeType } from "./canvasTypes";
 import { checkShapeInsideSelection, selectonDrawRect } from "./selection";
+import {drawTriangle} from "@/_canvas/draw/drawTriangle.tsx";
+import drawPath from "@/_canvas/_components/drawPath.tsx";
 
 interface onChangeProps {
    currentMode: modes;
@@ -242,6 +244,28 @@ class CanvasClass {
                   tolerance: this.tolerance,
                   activeColor: this.activeColor,
                   massiveSelected: this.multipleSelection.isSelected,
+               });
+               break;
+            case "triangle":
+               drawTriangle({
+                  shape,
+                  isActive,
+                  ctx : this.ctx,
+                  shouldRestore : false,
+                  tolerance : this.tolerance,
+                  activeColor : this.activeColor,
+                  isMassiveSelected : this.multipleSelection.isSelected
+               })
+               break;
+            case "others":
+               drawPath({
+                  shape,
+                  isActive,
+                  ctx : this.ctx,
+                  shouldRestore : false,
+                  tolerance : this.tolerance,
+                  activeColor : this.activeColor,
+                  isMassiveSelected : this.multipleSelection.isSelected,
                });
                break;
          }
@@ -1220,30 +1244,6 @@ class CanvasClass {
       window.removeEventListener("resize", this.resizeCanvas);
       this.canvas.removeEventListener("wheel", this.zoomAndScroll);
    }
-   // cleanup() {
-   //    // Remove event listeners using the stored references
-   //    document.removeEventListener("pointerdown", this.mouse_Down.bind(this));
-   //    document.removeEventListener("pointermove", this.mouse_Move.bind(this));
-   //    document.removeEventListener("pointerup", this.mouse_Up.bind(this));
-
-   //    // Remove touch event listeners
-   //    document.removeEventListener("touchstart", this.mouse_Down.bind(this));
-   //    document.removeEventListener("touchmove", this.mouse_Move.bind(this));
-   //    document.removeEventListener("touchend", this.mouse_Up.bind(this));
-   //    document.removeEventListener("touchcancel", this.mouse_Up.bind(this));
-
-   //    // Remove canvas event listeners
-   //    this.canvas.removeEventListener(
-   //       "dblclick",
-   //       this.mouseDblClick.bind(this),
-   //    );
-   //    this.canvas.removeEventListener("click", this.mouseClick.bind(this));
-
-   //    // Remove global document and window listeners
-   //    document.removeEventListener("keydown", this.documentKeyDown.bind(this));
-   //    window.removeEventListener("resize", this.resizeCanvas.bind(this));
-   //    this.canvas.removeEventListener("wheel", this.zoomAndScroll.bind(this));
-   // }
 }
 
 export default CanvasClass;
