@@ -28,6 +28,13 @@ const drawTriangle = (
    ctx.strokeStyle = stroke;
    ctx.lineWidth = lineWidth;
 
+   let updatedRadius = radius;
+   if (w <= 20 || h <= 20) {
+      updatedRadius = 0;
+   } else {
+      updatedRadius = radius;
+   }
+
    // Define the coordinates of the triangle's vertices
    const x1 = x + w * 0.5; // Top vertex (middle of the top edge)
    const y1 = y;
@@ -38,10 +45,10 @@ const drawTriangle = (
 
    ctx.moveTo(x1, y1)
 
-   ctx.arcTo(x1, y1, x2, y2, radius)
-   ctx.arcTo(x2, y2, x3, y3, radius)
+   ctx.arcTo(x1, y1, x2, y2, updatedRadius)
+   ctx.arcTo(x2, y2, x3, y3, updatedRadius)
 
-   ctx.arcTo(x3, y3, x1, y1, radius)
+   ctx.arcTo(x3, y3, x1, y1, updatedRadius)
    ctx.lineTo(x1, y1)
 
    ctx.stroke()

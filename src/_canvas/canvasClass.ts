@@ -19,11 +19,12 @@ import { resizeMove } from "./resizeAndDrag/resizeMove";
 import { getDragShape } from "./resizeAndDrag/getDragShape";
 import { getResizeShape } from "./resizeAndDrag/getResizeshape";
 import { lineConnection } from "./resizeAndDrag/line_connection";
-import { duplicateShape, getOffsets, isInside, reEvaluateShape } from "./utils";
+import {cursoHelper, duplicateShape, getOffsets, isInside, reEvaluateShape} from "./utils";
 import { CanvasShape, modes, ResizeDirection, shapeType } from "./canvasTypes";
 import { checkShapeInsideSelection, selectonDrawRect } from "./selection";
 import {drawTriangle} from "@/_canvas/draw/drawTriangle.tsx";
 import drawPath from "@/_canvas/_components/drawPath.tsx";
+import {rectResizeParams} from "@/_canvas/resizeAndDrag/resizeParams.ts";
 
 interface onChangeProps {
    currentMode: modes;
@@ -282,6 +283,8 @@ class CanvasClass {
          return;
       }
 
+      this.mouseDownPoint = {x: mouseX, y: mouseY };
+
       // @ts-expect-error it is necessary
       if (e.target?.tagName !== "CANVAS") {
          return;
@@ -423,6 +426,9 @@ class CanvasClass {
 
    mouse_Move(e: PointerEvent | TouchEvent) {
       const { x: mouseX, y: mouseY } = this.getTransformedMouseCoords(e);
+
+      e.preventDefault();
+
       if (this.freeModeIsDown) {
          if (mouseX > this.mouseDownPoint.x) {
             cConf.offset.x = cConf.offset.x - (mouseX - this.mouseDownPoint.x);
@@ -441,7 +447,29 @@ class CanvasClass {
 
       if (!this.isEditable) return;
 
-      e.preventDefault();
+      /* cursor helper */
+      let hasCur = false
+      this.canvasShapes.forEach((s) => {
+         if (!s || !cConf.activeShapes.has(s.id)) return;
+         const resize = rectResizeParams({mouseX,
+            mouseY,
+            y : s.props.y,
+            x : s.props.x,
+            width : s.props.w,
+            height : s.props.h,
+            tolerance : this.tolerance
+         })
+         const p = resize.find((s) => s.condition)
+         if (p) {
+            cursoHelper({
+               direction : p.side
+            })
+            hasCur = true;
+         }
+      })
+      if (!hasCur) {
+         document.body.style.cursor = "default";
+      }
 
       this.currentMousePosition = { x: mouseX, y: mouseY };
 

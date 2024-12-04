@@ -1,4 +1,4 @@
-import { CanvasShape } from "./canvasTypes";
+import {CanvasShape, ResizeDirection} from "./canvasTypes";
 import { v4 as uuidv4 } from "uuid";
 
 export const fontSizes = [
@@ -402,11 +402,41 @@ const slope = ({
    return false;
 };
 
+const cursoHelper = ({direction } : {direction : ResizeDirection}) => {
+   switch (direction) {
+      case "top-edge":
+         document.body.style.cursor = "ns-resize";  // North-South resize cursor
+         break;
+      case "bottom-edge":
+         document.body.style.cursor = "ns-resize";  // North-South resize cursor
+         break;
+      case "left-edge":
+         document.body.style.cursor = "ew-resize";  // East-West resize cursor
+         break;
+      case "right-edge":
+         document.body.style.cursor = "ew-resize";  // East-West resize cursor
+         break;
+      case "top-left":
+         document.body.style.cursor = "nwse-resize";  // North-West South-East diagonal resize cursor
+         break;
+      case "bottom-left":
+         document.body.style.cursor = "nesw-resize";  // North-East South-West diagonal resize cursor
+         break;
+      case "top-right":
+         document.body.style.cursor = "nesw-resize";  // North-East South-West diagonal resize cursor
+         break;
+      case "bottom-right":
+         document.body.style.cursor = "nwse-resize";  // North-West South-East diagonal resize cursor
+         break;
+   }
+}
+
 export {
    dots,
    slope,
    isInside,
    getOffsets,
+   cursoHelper,
    duplicateShape,
    reEvaluateShape,
    getClosestPoints,
