@@ -89,7 +89,7 @@ export const drawTextInsideShape = ({
    context.beginPath();
    const chunks = shape.text.split("\n");
    //  font-family: "Borel", cursive;
-   context.font = `${shape.fontSize}px Borel`;
+   context.font = `${shape.fontWeight} ${shape.fontSize}px Borel`;
    context.fillStyle = shape.fontColor;
    context.textAlign = shape.textAlign;
    context.textBaseline = "middle";

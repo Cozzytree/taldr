@@ -101,16 +101,16 @@ const ChangeModes = ({
             const ctx = canvas.getContext("2d");
 
             // Set the canvas size to match the image size
-            canvas.width = imgElement.width;
-            canvas.height = imgElement.height;
+            canvas.width = imgElement.width * 0.7;
+            canvas.height = imgElement.height * 0.7;
 
             // Draw the image onto the canvas
             ctx?.drawImage(
                imgElement,
                0,
                0,
-               imgElement.width,
-               imgElement.height,
+               imgElement.width * 0.7,
+               imgElement.height * 0.7,
             );
 
             // Export the image at a lower quality (e.g., 0.5 means 50% quality)
@@ -121,7 +121,7 @@ const ChangeModes = ({
             const finaleImage = new Image();
 
             finaleImage.onload = () => {
-               cConf.image = finaleImage;
+               cConf.image = finaleImage.src;
             };
             finaleImage.src = reducedQualityImage;
          };

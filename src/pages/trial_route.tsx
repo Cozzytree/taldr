@@ -53,6 +53,7 @@ export default function TrialRoute() {
                               xRadius: 0, // Default to 0 if not rounded
                               y: 58,
                               yRadius: 0, // Default to 0 if not rounded
+                              fontWeight : "normal"
                            },
                            type: "rect",
                         },

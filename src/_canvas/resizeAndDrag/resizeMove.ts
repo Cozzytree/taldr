@@ -250,16 +250,15 @@ const resizeMove = ({
          }
          break;
       case "text":
-         if (mouseX > resizeShape.props.x && mouseY > resizeShape.props.y) {
-            shape.props.w = mouseX - shape.props.x;
-            shape.props.fontSize =
-               Math.max(
-                  12, // Minimum size to prevent text from becoming too small
-                  (mouseX - shape.props.x) * 0.2 +
-                     (mouseY - shape.props.y) * 0.3,
-               ) * 0.5;
-
+         if (direction) {
+            rectResizemove({ direction, mouseX, mouseY, resizeShape, shape });
             findConnectionAndMove({ allShapes: shapes, shape });
+            const xSide =
+                mouseX > resizeShape.props.x ? mouseX - resizeShape.props.x : resizeShape.props.x - mouseX;
+            // const ySide =
+            //     mouseY > resizeShape.props.y ? mouseY - resizeShape.props.y : resizeShape.props.y - mouseY;
+            shape.props.fontSize = Math.max(resizeShape.props.fontSize, xSide * 0.2)
+
          }
          break;
       case "pencil":

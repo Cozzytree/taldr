@@ -2,10 +2,10 @@ import {CanvasShape, ResizeDirection} from "./canvasTypes";
 import { v4 as uuidv4 } from "uuid";
 
 export const fontSizes = [
-   { label: "S", size: 16 , lineWidth : 4 },
-   { label: "M", size: 18 , lineWidth : 5 },
-   { label: "L", size: 20 , lineWidth : 7},
-   { label: "XL", size: 22, lineWidth : 8 },
+   { label: "S", size: 16 , lineWidth : 4 , weight : "lighter"},
+   { label: "M", size: 18 , lineWidth : 5 , weight: "normal"},
+   { label: "L", size: 20 , lineWidth : 7 , weight : "bold"},
+   { label: "XL", size: 22, lineWidth : 8 , weight: "bolder"},
 ];
 
 export const colors = [
@@ -14,10 +14,10 @@ export const colors = [
    "#1976D2", // Blue
    "#388E3C", // Green
    "#8E24AA", // Purple
-   "#0288D1", // Sky blue
+   "#2a00ff", // Sky blue
    "#FBC02D", // Yellow
    "#7B1FA2", // Violet
-   "#0097A7", // Teal
+   "#4dff00", // Teal
    "#FF5722", // Orange
    "#FFFFFF",
 ];
@@ -396,13 +396,11 @@ const slope = ({
    // Calculate the slope between the mouse position and each point
    const slopeMouseA = (mouseY - pa.y) / (mouseX - pa.x);
    const slopeMouseB = (mouseY - pb.y) / (mouseX - pb.x);
-   if (Math.abs(slopeMouseA - slopeMouseB) <= 1) {
-      return true;
-   }
-   return false;
+   return Math.abs(slopeMouseA - slopeMouseB) <= 1;
+
 };
 
-const cursoHelper = ({direction } : {direction : ResizeDirection}) => {
+const cursorHelper = ({direction } : {direction : ResizeDirection}) => {
    switch (direction) {
       case "top-edge":
          document.body.style.cursor = "ns-resize";  // North-South resize cursor
@@ -436,7 +434,7 @@ export {
    slope,
    isInside,
    getOffsets,
-   cursoHelper,
+   cursorHelper,
    duplicateShape,
    reEvaluateShape,
    getClosestPoints,

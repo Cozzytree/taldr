@@ -10,6 +10,8 @@ export type shapeType =
    | "triangle"
    | "path";
 
+export type fontWeights =  "lighter" | "normal" | "bold" | "bolder";
+
 export type ResizeDirection =
    | "left-edge"
    | "right-edge"
@@ -62,6 +64,7 @@ export interface ShapeProps {
    text: string;
    textAlign: "left" | "center" | "right";
    fontSize: number;
+   fontWeight: fontWeights;
 
    points?: { x: number; y: number; offsetX: number; offsetY: number }[];
 
@@ -78,7 +81,7 @@ export interface ShapeProps {
    iteration?: number;
    inset?: number;
 
-   image?: CanvasImageSource;
+   image?: string;
 }
 
 export interface CanvasShape {

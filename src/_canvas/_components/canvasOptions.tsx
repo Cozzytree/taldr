@@ -8,6 +8,7 @@ import { useState } from "react";
 import OpacityOptions from "@/_canvas/_components/opacityOptions.tsx";
 import LineandradiusOption from "@/_canvas/_components/lineandradiusOption.tsx";
 import ConvertShape from "@/_canvas/_components/convertShape.tsx";
+import {fontWeights} from "@/_canvas/canvasTypes.ts";
 
 export default function CanvasOptions({
    canvas,
@@ -165,6 +166,24 @@ export default function CanvasOptions({
       }
    };
 
+   const handleFontWeight = (v : fontWeights) => {
+      if (!canvas.current || !canvas.current.canvasShapes) return;
+
+      if (Array.isArray(canvas.current.canvasShapes)) {
+         for (let i = 0; i < canvas.current.canvasShapes.length; i++) {
+            if (
+              !canvas.current.canvasShapes[i] ||
+              !cConf.activeShapes.has(canvas.current.canvasShapes[i].id)
+            )
+               continue;
+
+            canvas.current.canvasShapes[i].props.fontWeight = v;
+         }
+
+         canvas.current.draw();
+      }
+   }
+
    const handleRadius = (v: boolean) => {
       if (!canvas.current || !canvas.current.canvasShapes) return;
 
@@ -249,7 +268,7 @@ export default function CanvasOptions({
             handleStrokeColor={handleStrokeColor}
          />
 
-         <div className={"w-full b-1 border border-foreground/10 mt-1 mb-1"} />
+         <div className={"w-full b-1 border border-foreground/10 mt-[0.2em] mb-1"} />
 
          <OpacityOptions
             setOpac={setCurrentOpac}
@@ -262,6 +281,7 @@ export default function CanvasOptions({
          <FontSizeoption
             handleFontSize={handleFontSize}
             handleLineWidth={handleStroke}
+            handleFontWeight={handleFontWeight}
          />
          {/* <Forward /> */}
          {activesShapes > 0 && (

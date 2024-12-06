@@ -1,8 +1,8 @@
-import { modes } from "./canvasTypes";
+import {fontWeights, modes} from "./canvasTypes";
 
 export const cConf: {
    currMode: modes;
-   image: CanvasImageSource | null;
+   image: string | null;
    activeShapes: Map<string, boolean>;
    scale: { x: number; y: number };
    offset: { x: number; y: number };
@@ -28,6 +28,7 @@ class DefaultShape {
    connectedTo: string[] = [];
    radius: number;
    fontColor: string;
+   fontWeight : fontWeights;
 
    text: string;
    textAlign: "left" | "center" | "right";
@@ -52,6 +53,7 @@ class DefaultShape {
       this.offsetX = 0;
       this.offsetY = 0;
       this.fontColor = "#ffffff";
+      this.fontWeight = "bold";
    }
 }
 

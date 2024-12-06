@@ -1,9 +1,12 @@
 import { fontSizes } from "../utils";
+import {fontWeights} from "@/_canvas/canvasTypes.ts";
 
 export default function FontSizeoption({
    handleFontSize,
-   handleLineWidth
+   handleLineWidth,
+   handleFontWeight,
 }: {
+   handleFontWeight : (v : fontWeights) => void
    handleLineWidth: (stroke : number) => void;
    handleFontSize: (v: number) => void;
 }) {
@@ -13,6 +16,7 @@ export default function FontSizeoption({
             <button
                onClick={() => {
                   handleFontSize(s.size)
+                  handleFontWeight(s.weight as fontWeights)
                   handleLineWidth(s.lineWidth)
                }}
                key={s.size}

@@ -6,6 +6,7 @@ const drawImage = ({
    ctx,
    isActive,
    activeColor,
+   imgElement,
    tolerance = 6,
    isMassiveSelected,
    shouldRestore = true,
@@ -16,12 +17,21 @@ const drawImage = ({
    activeColor?: string;
    shouldRestore?: boolean;
    isMassiveSelected?: boolean;
+   imgElement?: HTMLImageElement;
    ctx: CanvasRenderingContext2D;
 }) => {
    const { image, x, y, w, h } = img.props;
    if (!image) return;
 
-   ctx.drawImage(image, x, y, w, h);
+   if (imgElement) {
+      ctx.drawImage(imgElement, x, y, w, h)
+   } else {
+      const i = new Image();
+      i.src = image
+      i.onload = () => {
+         ctx.drawImage(i, x, y, w, h);
+      }
+   }
 
    if (isActive && activeColor) {
       drawDotsAndRectActive({

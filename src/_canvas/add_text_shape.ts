@@ -21,8 +21,8 @@ const addTextToShape = ({
       isInside({
          inner: { x: mouseX, y: mouseY, w: 0, h: 0 },
          outer: {
-            x: shape.props.x,
-            y: shape.props.y,
+            x: shape.type == "ellipse" ? shape.props.x - (shape.props.xRadius??0)  : shape.props.x,
+            y: shape.type == "ellipse" ? shape.props.y - (shape.props.yRadius??0) : shape.props.y,
             w: shape.props.w,
             h: shape.props.h,
          },
@@ -35,8 +35,10 @@ const addTextToShape = ({
          text: shape.props.text,
          width: shape.props.w,
          height: shape.props.h,
-         mouseX: shape.props.x + canvasOffsetX,
-         mouseY: shape.props.y + canvasOffsetY,
+         mouseX:
+            shape.type == "ellipse" ? shape.props.x + canvasOffsetX - (shape.props.xRadius??0) : shape.props.x + canvasOffsetX,
+         mouseY:
+            shape.type == "ellipse" ? shape.props.y + canvasOffsetY - (shape.props.yRadius??0) : shape.props.y + canvasOffsetY,
          fSize: shape.props.fontSize,
       });
       return true;
