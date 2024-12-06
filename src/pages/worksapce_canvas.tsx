@@ -81,7 +81,7 @@ export default function WorkspaceCanvas() {
 
    useEffect(() => {
       const url =
-         import.meta.env.VITE_MODE !== "development"
+         import.meta.env.VITE_MODE === "development"
             ? `ws://localhost:8080/ws`
             : `wss://43.204.145.218:8080/ws`;
       // `wss://${import.meta.env.VITE_WEBSOCKET_URL}/ws`;
