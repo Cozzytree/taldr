@@ -34,13 +34,15 @@ const useGetShapes = (workspaceId: string) => {
 
    const fetchShapes = useCallback(async () => {
       setloading(true);
+
+      const url = `${
+         import.meta.env.VITE_MODE === "development"
+            ? "http://localhost:8080"
+            : import.meta.env.VITE_API_URL
+      }/workspace_data/${workspaceId}`;
       try {
          const res = await fetch(
-            `${
-               import.meta.env.VITE_MODE === "development"
-                  ? "http://localhost:8080"
-                  : import.meta.env.VITE_API_URL
-            }/workspace_data/${workspaceId}`,
+            `${import.meta.env.VITE_API_URL}/workspace_data/${workspaceId}`,
             {
                method: "GET",
             },
@@ -82,9 +84,10 @@ export default function WorkspaceCanvas() {
 
    useEffect(() => {
       const url =
-         import.meta.env.VITE_MODE === "development"
+         import.meta.env.VITE_MODE !== "development"
             ? `ws://localhost:8080/ws`
-            : `wss://${import.meta.env.VITE_WEBSOCKET_URL}/ws`;
+            : `wss://43.204.145.218:8080/ws`;
+      // `wss://${import.meta.env.VITE_WEBSOCKET_URL}/ws`;
       socketRef.current = new WebSocket(url);
 
       if (socketRef?.current) {

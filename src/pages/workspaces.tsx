@@ -49,7 +49,7 @@ const useGetWorkspaces = (userId: string | undefined) => {
 
          const res = await fetch(
             `${
-               import.meta.env.VITE_MODE === "development"
+               import.meta.env.VITE_MODE !== "development"
                   ? "http://localhost:8080"
                   : import.meta.env.VITE_API_URL
             }/user_workspaces/${userId}`,
