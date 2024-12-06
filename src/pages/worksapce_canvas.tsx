@@ -41,12 +41,9 @@ const useGetShapes = (workspaceId: string) => {
             : import.meta.env.VITE_API_URL
       }/workspace_data/${workspaceId}`;
       try {
-         const res = await fetch(
-            `${import.meta.env.VITE_API_URL}/workspace_data/${workspaceId}`,
-            {
-               method: "GET",
-            },
-         );
+         const res = await fetch(url, {
+            method: "GET",
+         });
          const data = await res.json();
          setData(data);
       } catch (err: unknown) {

@@ -1,26 +1,37 @@
-import {v4 as uuidv4} from "uuid";
-import {buildingNewShape, buildShape, createNewText, intializeShape,} from "./newShape";
+import { v4 as uuidv4 } from "uuid";
+import {
+   buildingNewShape,
+   buildShape,
+   createNewText,
+   intializeShape,
+} from "./newShape";
 import drawText from "./draw/drawText";
-import {Bin, Restore} from "./redoundo";
-import {drawLine} from "./draw/drawline";
-import {rectDraw} from "./draw/drawRect";
-import {createGuide} from "./showGuides";
-import {drawPencil} from "./draw/drawPencil";
-import {drawEllipse} from "./draw/drawEllipse";
-import {addTextToShape} from "./add_text_shape";
-import {dragMove} from "./resizeAndDrag/dragMove";
-import DefaultShape, {cConf} from "./canvasConfig";
-import {resizeMove} from "./resizeAndDrag/resizeMove";
-import {getDragShape} from "./resizeAndDrag/getDragShape";
-import {getResizeShape} from "./resizeAndDrag/getResizeshape";
-import {lineConnection} from "./resizeAndDrag/line_connection";
-import {cursorHelper, duplicateShape, getOffsets, isInside, reEvaluateShape,} from "./utils";
-import {CanvasShape, modes, ResizeDirection, shapeType} from "./canvasTypes";
-import {checkShapeInsideSelection, selectonDrawRect} from "./selection";
-import {drawTriangle} from "@/_canvas/draw/drawTriangle.tsx";
+import { Bin, Restore } from "./redoundo";
+import { drawLine } from "./draw/drawline";
+import { rectDraw } from "./draw/drawRect";
+import { createGuide } from "./showGuides";
+import { drawPencil } from "./draw/drawPencil";
+import { drawEllipse } from "./draw/drawEllipse";
+import { addTextToShape } from "./add_text_shape";
+import { dragMove } from "./resizeAndDrag/dragMove";
+import DefaultShape, { cConf } from "./canvasConfig";
+import { resizeMove } from "./resizeAndDrag/resizeMove";
+import { getDragShape } from "./resizeAndDrag/getDragShape";
+import { getResizeShape } from "./resizeAndDrag/getResizeshape";
+import { lineConnection } from "./resizeAndDrag/line_connection";
+import {
+   cursorHelper,
+   duplicateShape,
+   getOffsets,
+   isInside,
+   reEvaluateShape,
+} from "./utils";
+import { CanvasShape, modes, ResizeDirection, shapeType } from "./canvasTypes";
+import { checkShapeInsideSelection, selectonDrawRect } from "./selection";
+import { drawTriangle } from "@/_canvas/draw/drawTriangle.tsx";
 import drawPath from "@/_canvas/_components/drawPath.tsx";
-import {rectResizeParams} from "@/_canvas/resizeAndDrag/resizeParams.ts";
-import {drawImage} from "./draw/drawImage";
+import { rectResizeParams } from "@/_canvas/resizeAndDrag/resizeParams.ts";
+import { drawImage } from "./draw/drawImage";
 
 interface onChangeProps {
    currentMode: modes;
@@ -38,7 +49,7 @@ interface contructProps {
 
 class CanvasClass {
    // Declare properties to store the bound function references
-   imageMap : Map<string, HTMLImageElement> = new Map()
+   imageMap: Map<string, HTMLImageElement> = new Map();
    mouseDownPoint: { x: number; y: number } = { x: 0, y: 0 };
    currentMousePosition: { x: number; y: number } = { x: 0, y: 0 };
    canvasShapes: CanvasShape[] = [];
@@ -160,13 +171,17 @@ class CanvasClass {
       this.canvasShapes.forEach((shape) => {
          if (!shape) return;
          if (
-           ( shape.props.x + shape.props.w * 0.8 - cConf.offset.x) * cConf.scale.x <= 0 ||
-            shape.props.x + shape.props.w * 0.2 - cConf.offset.x > this.canvas.width
+            (shape.props.x + shape.props.w * 0.8 - cConf.offset.x) *
+               cConf.scale.x <=
+               0 ||
+            shape.props.x + shape.props.w * 0.2 - cConf.offset.x >
+               this.canvas.width
          )
             return;
          if (
             shape.props.y - cConf.offset.y + shape.props.h * 0.8 <= 0 ||
-            shape.props.y + shape.props.h * 0.2 - cConf.offset.y > this.canvas.height
+            shape.props.y + shape.props.h * 0.2 - cConf.offset.y >
+               this.canvas.height
          )
             return;
 
@@ -267,12 +282,11 @@ class CanvasClass {
                });
                break;
             case "image":
-               const img = this.imageMap.get(shape.id);
                drawImage({
                   isActive,
                   img: shape,
                   ctx: this.ctx,
-                  imgElement : img,
+                  imgElement: this.imageMap.get(shape.id),
                   shouldRestore: false,
                   tolerance: this.tolerance,
                   activeColor: this.activeColor,
@@ -663,10 +677,13 @@ class CanvasClass {
       if (this.newShapeParams) {
          buildShape({ mouseX, mouseY, shape: this.newShapeParams });
 
-         if (this.newShapeParams.type === "image" && this.newShapeParams.props.image) {
-            const newI = new Image()
-            newI.src = this.newShapeParams.props.image
-            this.imageMap.set(this.newShapeParams?.id || "", newI)
+         if (
+            this.newShapeParams.type === "image" &&
+            this.newShapeParams.props.image
+         ) {
+            const newI = new Image();
+            newI.src = this.newShapeParams.props.image;
+            this.imageMap.set(this.newShapeParams?.id || "", newI);
          }
 
          this.findEmptyIndexAndInsert(this.newShapeParams);
@@ -919,8 +936,8 @@ class CanvasClass {
 
                         if (s.type == "image" && s.props.image) {
                            const i = new Image();
-                           i.src = s.props.image
-                           this.imageMap.set(s.id, i)
+                           i.src = s.props.image;
+                           this.imageMap.set(s.id, i);
                         }
 
                         this.findEmptyIndexAndInsert(s);
@@ -973,7 +990,7 @@ class CanvasClass {
                         );
                         if (v !== -1) {
                            if (s.type == "image") {
-                              this.imageMap.delete(s.id)
+                              this.imageMap.delete(s.id);
                            }
                            shapes.push(
                               JSON.parse(JSON.stringify(this.canvasShapes[v])),
@@ -1028,14 +1045,13 @@ class CanvasClass {
       this.canvasShapes.forEach((s, index) => {
          if (!s) return;
          if (cConf.activeShapes.has(s.id)) {
-
             if (s.type === "figure") {
                this.canvasShapes.forEach((a, i) => {
                   if (s && s.props.containerId === s.id) {
                      // remove cached image
 
                      if (s.type == "image") {
-                        this.imageMap.delete(s.id)
+                        this.imageMap.delete(s.id);
                      }
                      this.canvasShapes.splice(i, 1);
                      toBin.push(JSON.parse(JSON.stringify(a)));
@@ -1045,7 +1061,7 @@ class CanvasClass {
 
             /* remove cached image */
             if (s.type == "image") {
-               this.imageMap.delete(s.id)
+               this.imageMap.delete(s.id);
             }
 
             cConf.activeShapes.delete(s.id);
@@ -1084,15 +1100,20 @@ class CanvasClass {
       this.fallbackCanvas.height = window.innerHeight;
       this.draw();
       if (this.multipleSelection.isSelected) {
-         this.clearRect(this.fallbackContext, window.innerWidth, window.innerHeight);
+         this.clearRect(
+            this.fallbackContext,
+            window.innerWidth,
+            window.innerHeight,
+         );
          selectonDrawRect({
-            ctx : this.fallbackContext,
-            params : {
-               x : this.multipleSelection.x,
-               y : this.multipleSelection.y,
-               w : this.multipleSelection.width,
-               h : this.multipleSelection.height
-            }});
+            ctx: this.fallbackContext,
+            params: {
+               x: this.multipleSelection.x,
+               y: this.multipleSelection.y,
+               w: this.multipleSelection.width,
+               h: this.multipleSelection.height,
+            },
+         });
       }
    }
 
