@@ -1,3 +1,4 @@
+import { useUpdateDescription, useUpdateName } from "@/api/workspace";
 import {
    AlertDialog,
    AlertDialogAction,
@@ -11,7 +12,10 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
    Dialog,
+   DialogClose,
    DialogContent,
+   DialogDescription,
+   DialogFooter,
    DialogHeader,
    DialogTitle,
    DialogTrigger,
@@ -27,7 +31,7 @@ import {
 import { useUser } from "@clerk/clerk-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { EllipsisVertical, Plus, RefreshCcw } from "lucide-react";
+import { EllipsisVertical, LoaderCircle, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface workspace {
@@ -44,7 +48,11 @@ const useGetWorkspaces = (userId: string | undefined) => {
          if (!userId) throw new Error("invalid user");
 
          const res = await fetch(
-            `${import.meta.env.VITE_API_URL}/user_workspaces/${userId}`,
+            `${
+               import.meta.env.VITE_MODE === "development"
+                  ? "http://localhost:8080"
+                  : import.meta.env.VITE_API_URL
+            }/user_workspaces/${userId}`,
          );
          if (!res.ok) {
             throw new Error("unknow error");
@@ -62,7 +70,11 @@ const useCreateWorkspace = () => {
    const { mutate, isLoading } = useMutation({
       mutationFn: async (data: workspace) => {
          const res = await fetch(
-            `${import.meta.env.VITE_API_URL}/new_workspace`,
+            `${
+               import.meta.env.VITE_MODE === "development"
+                  ? "http://localhost:8080"
+                  : import.meta.env.VITE_API_URL
+            }/new_workspace`,
             {
                method: "POST",
                headers: {
@@ -95,7 +107,11 @@ const useDeleteWorkspace = () => {
       }) => {
          try {
             const res = await fetch(
-               `${import.meta.env.VITE_API_URL}/delete_workspace/${workspaceId}/${userId}`,
+               `${
+                  import.meta.env.VITE_MODE === "development"
+                     ? "http://localhost:8080"
+                     : import.meta.env.VITE_API_URLL
+               }/delete_workspace/${workspaceId}/${userId}`,
                {
                   method: "DELETE",
                },
@@ -121,6 +137,11 @@ export default function Workspaces() {
    const [description, setDescription] = useState("");
    const { user, isLoaded } = useUser();
    const { data, isLoading, refetch } = useGetWorkspaces(user?.id);
+
+   const { isLoading: updatingName, mutate: updateName } = useUpdateName();
+   const { isLoading: updatingDescription, mutate: updateDescription } =
+      useUpdateDescription();
+
    const { mutate, isLoading: creatingWorkspace } = useCreateWorkspace();
    const { mutate: deleteWorkspace, isLoading: deletingWorkspace } =
       useDeleteWorkspace();
@@ -134,12 +155,12 @@ export default function Workspaces() {
    if (isLoading && !isLoaded) {
       return (
          <div className="min-h-screen w-full flex justify-center items-center">
-            <RefreshCcw className="animate-spin" />
+            <LoaderCircle className="animate-spin" />
          </div>
       );
    }
 
-   if (isLoaded && !user?.id) {
+   if (isLoaded && !user?.id && !isLoading && !data) {
       navigate({ to: "/" });
    }
 
@@ -172,8 +193,21 @@ export default function Workspaces() {
       );
    };
 
+   const handleUpdate = (n: string, d: string, id: string) => {
+      if (!user?.id) return;
+      updateName({ name: n, userId: user?.id, workspaceId: id });
+      updateDescription({ description: d, userId: user.id, workspaceId: id });
+   };
+
    return (
       <div className="min-h-screen w-full flex flex-col items-center gap-10 justify-start">
+         {(updatingDescription || updatingName) && (
+            <div className="fixed bottom-6 right-4 z-50 p-2 bg-accent rounded-md flex items-center gap-2">
+               <span className="text-sm">Updating...</span>
+               <LoaderCircle className="animate-spin" />
+            </div>
+         )}
+
          <div className="w-full py-4 flex justify-between items-center px-3 sm:px-10">
             <h1 className="text-xl font-semibold text-start w-full">
                Workspaces
@@ -225,42 +259,51 @@ export default function Workspaces() {
                            </Link>
 
                            <AlertDialog>
-                              <Menubar>
-                                 <MenubarMenu>
-                                    <MenubarTrigger asChild>
-                                       <button>
-                                          <EllipsisVertical />
-                                       </button>
-                                    </MenubarTrigger>
-                                    <MenubarContent>
-                                       <AlertDialogTrigger asChild>
-                                          <MenubarItem>Delete</MenubarItem>
-                                       </AlertDialogTrigger>
-                                    </MenubarContent>
-                                 </MenubarMenu>
-                              </Menubar>
+                              <Dialog>
+                                 <Menubar>
+                                    <MenubarMenu>
+                                       <MenubarTrigger asChild>
+                                          <button>
+                                             <EllipsisVertical />
+                                          </button>
+                                       </MenubarTrigger>
+                                       <MenubarContent>
+                                          <AlertDialogTrigger asChild>
+                                             <MenubarItem>Delete</MenubarItem>
+                                          </AlertDialogTrigger>
+                                          <UpdateDetails
+                                             n={w.name}
+                                             d={w.description}
+                                             fn={handleUpdate}
+                                             id={w._id || ""}
+                                             key={w._id}
+                                          />
+                                       </MenubarContent>
+                                    </MenubarMenu>
+                                 </Menubar>
 
-                              <AlertDialogContent>
-                                 <AlertDialogTitle>
-                                    Are you sure you want to delete?
-                                 </AlertDialogTitle>
-                                 <AlertDialogFooter>
-                                    <AlertDialogCancel
-                                       className={`${buttonVariants({ variant: "outline", size: "sm" })}`}
-                                    >
-                                       cancel
-                                    </AlertDialogCancel>
-                                    <AlertDialogAction
-                                       disabled={deletingWorkspace}
-                                       onClick={() =>
-                                          handleDeleteWorkspace(w._id)
-                                       }
-                                       className={`${buttonVariants({ variant: "destructive", size: "sm" })}`}
-                                    >
-                                       confirm
-                                    </AlertDialogAction>
-                                 </AlertDialogFooter>
-                              </AlertDialogContent>
+                                 <AlertDialogContent>
+                                    <AlertDialogTitle>
+                                       Are you sure you want to delete?
+                                    </AlertDialogTitle>
+                                    <AlertDialogFooter>
+                                       <AlertDialogCancel
+                                          className={`${buttonVariants({ variant: "outline", size: "sm" })}`}
+                                       >
+                                          cancel
+                                       </AlertDialogCancel>
+                                       <AlertDialogAction
+                                          disabled={deletingWorkspace}
+                                          onClick={() =>
+                                             handleDeleteWorkspace(w._id)
+                                          }
+                                          className={`${buttonVariants({ variant: "destructive", size: "sm" })}`}
+                                       >
+                                          confirm
+                                       </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                 </AlertDialogContent>
+                              </Dialog>
                            </AlertDialog>
                         </div>
                      </CardHeader>
@@ -273,3 +316,46 @@ export default function Workspaces() {
       </div>
    );
 }
+
+const UpdateDetails = ({
+   n,
+   d,
+   fn,
+   id,
+}: {
+   id: string;
+   n: string;
+   d: string;
+   fn: (n: string, d: string, id: string) => void;
+}) => {
+   const [name, setName] = useState(n);
+   const [description, setDescription] = useState(d);
+   return (
+      <>
+         <DialogTrigger>
+            <MenubarItem>Update</MenubarItem>
+         </DialogTrigger>
+         <DialogContent>
+            <DialogTitle>Update</DialogTitle>
+            <DialogDescription>
+               <Input
+                  defaultValue={name}
+                  type="text"
+                  onChange={(e) => setName(e.target.value)}
+               />
+               <Input
+                  defaultValue={description}
+                  type="text"
+                  onChange={(e) => setDescription(e.target.value)}
+               />
+            </DialogDescription>
+            <DialogFooter>
+               <DialogClose>cancel</DialogClose>
+               <DialogClose onClick={() => fn(name, description, id)}>
+                  update
+               </DialogClose>
+            </DialogFooter>
+         </DialogContent>
+      </>
+   );
+};

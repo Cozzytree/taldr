@@ -7,7 +7,7 @@ import {
    useUser,
 } from "@clerk/clerk-react";
 import { Link } from "@tanstack/react-router";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, LoaderCircle } from "lucide-react";
 
 export default function IndexRoute() {
    const { user, isLoaded } = useUser();
@@ -15,7 +15,7 @@ export default function IndexRoute() {
    if (!isLoaded) {
       return (
          <div className="text-sm text-foreground/70 h-screen w-full flex flex-col justify-center items-center">
-            loading..
+            <LoaderCircle className="animate-spin" />
          </div>
       );
    }

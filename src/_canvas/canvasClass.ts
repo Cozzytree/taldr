@@ -19,12 +19,19 @@ import { resizeMove } from "./resizeAndDrag/resizeMove";
 import { getDragShape } from "./resizeAndDrag/getDragShape";
 import { getResizeShape } from "./resizeAndDrag/getResizeshape";
 import { lineConnection } from "./resizeAndDrag/line_connection";
-import {cursoHelper, duplicateShape, getOffsets, isInside, reEvaluateShape} from "./utils";
+import {
+   cursoHelper,
+   duplicateShape,
+   getOffsets,
+   isInside,
+   reEvaluateShape,
+} from "./utils";
 import { CanvasShape, modes, ResizeDirection, shapeType } from "./canvasTypes";
 import { checkShapeInsideSelection, selectonDrawRect } from "./selection";
-import {drawTriangle} from "@/_canvas/draw/drawTriangle.tsx";
+import { drawTriangle } from "@/_canvas/draw/drawTriangle.tsx";
 import drawPath from "@/_canvas/_components/drawPath.tsx";
-import {rectResizeParams} from "@/_canvas/resizeAndDrag/resizeParams.ts";
+import { rectResizeParams } from "@/_canvas/resizeAndDrag/resizeParams.ts";
+import { drawImage } from "./draw/drawImage";
 
 interface onChangeProps {
    currentMode: modes;
@@ -163,12 +170,12 @@ class CanvasClass {
       this.canvasShapes.forEach((shape) => {
          if (!shape) return;
          if (
-            shape.props.x - cConf.offset.x <= 0 ||
+            shape.props.x - cConf.offset.x + shape.props.w * 0.8 <= 0 ||
             shape.props.x + shape.props.h - cConf.offset.x > this.canvas.width
          )
             return;
          if (
-            shape.props.y - cConf.offset.y <= 0 ||
+            shape.props.y - cConf.offset.y + shape.props.h * 0.8 <= 0 ||
             shape.props.y + shape.props.h - cConf.offset.y > this.canvas.height
          )
             return;
@@ -251,22 +258,33 @@ class CanvasClass {
                drawTriangle({
                   shape,
                   isActive,
-                  ctx : this.ctx,
-                  shouldRestore : false,
-                  tolerance : this.tolerance,
-                  activeColor : this.activeColor,
-                  isMassiveSelected : this.multipleSelection.isSelected
-               })
+                  ctx: this.ctx,
+                  shouldRestore: false,
+                  tolerance: this.tolerance,
+                  activeColor: this.activeColor,
+                  isMassiveSelected: this.multipleSelection.isSelected,
+               });
                break;
             case "others":
                drawPath({
                   shape,
                   isActive,
-                  ctx : this.ctx,
-                  shouldRestore : false,
-                  tolerance : this.tolerance,
-                  activeColor : this.activeColor,
-                  isMassiveSelected : this.multipleSelection.isSelected,
+                  ctx: this.ctx,
+                  shouldRestore: false,
+                  tolerance: this.tolerance,
+                  activeColor: this.activeColor,
+                  isMassiveSelected: this.multipleSelection.isSelected,
+               });
+               break;
+            case "image":
+               drawImage({
+                  isActive,
+                  img: shape,
+                  ctx: this.ctx,
+                  shouldRestore: false,
+                  tolerance: this.tolerance,
+                  activeColor: this.activeColor,
+                  isMassiveSelected: this.multipleSelection.isSelected,
                });
                break;
          }
@@ -283,7 +301,7 @@ class CanvasClass {
          return;
       }
 
-      this.mouseDownPoint = {x: mouseX, y: mouseY };
+      this.mouseDownPoint = { x: mouseX, y: mouseY };
 
       // @ts-expect-error it is necessary
       if (e.target?.tagName !== "CANVAS") {
@@ -328,7 +346,6 @@ class CanvasClass {
             initialPoint: { x: mouseX, y: mouseY },
             shapeType: cConf.currMode as shapeType,
          }) as CanvasShape;
-
          return;
       }
 
@@ -448,25 +465,26 @@ class CanvasClass {
       if (!this.isEditable) return;
 
       /* cursor helper */
-      let hasCur = false
+      let hasCur = false;
       this.canvasShapes.forEach((s) => {
          if (!s || !cConf.activeShapes.has(s.id)) return;
-         const resize = rectResizeParams({mouseX,
+         const resize = rectResizeParams({
+            mouseX,
             mouseY,
-            y : s.props.y,
-            x : s.props.x,
-            width : s.props.w,
-            height : s.props.h,
-            tolerance : this.tolerance
-         })
-         const p = resize.find((s) => s.condition)
+            y: s.props.y,
+            x: s.props.x,
+            width: s.props.w,
+            height: s.props.h,
+            tolerance: this.tolerance,
+         });
+         const p = resize.find((s) => s.condition);
          if (p) {
             cursoHelper({
-               direction : p.side
-            })
+               direction: p.side,
+            });
             hasCur = true;
          }
-      })
+      });
       if (!hasCur) {
          document.body.style.cursor = "default";
       }
@@ -533,7 +551,7 @@ class CanvasClass {
             mouseX,
             mouseY,
             ctx: this.fallbackContext,
-            shape: this.newShapeParams,
+            shape: this.newShapeParams as CanvasShape,
          });
       }
 

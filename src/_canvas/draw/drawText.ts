@@ -18,10 +18,12 @@ const drawText = ({
    massiveSelected?: boolean;
 }) => {
    context.beginPath();
+   context.font = `${shape.fontSize}px Borel`;
    context.fillStyle = shape.fontColor;
-   const texts = shape.text.split("\n");
    context.textAlign = shape.textAlign;
-   context.font = `${shape.fontSize}px Arial`;
+   context.textBaseline = "middle";
+
+   const texts = shape.text.split("\n");
 
    // const maxHeight = texts.length * shape.fontSize;
    // Adjust horizontal positioning based on text alignment
@@ -86,9 +88,11 @@ export const drawTextInsideShape = ({
 
    context.beginPath();
    const chunks = shape.text.split("\n");
-   context.font = `${shape.fontSize}px Arial`;
+   //  font-family: "Borel", cursive;
+   context.font = `${shape.fontSize}px Borel`;
    context.fillStyle = shape.fontColor;
    context.textAlign = shape.textAlign;
+   context.textBaseline = "middle";
 
    const lineHeight = shape.fontSize; // You can adjust this value for line spacing
 
@@ -139,6 +143,7 @@ export const drawTextInsideShape = ({
       }
 
       // Draw the line of text
+      // context.strokeText(line, xPoint, yPoint);
       context.fillText(line, xPoint, yPoint);
       yPoint += lineHeight; // Move down by the line height for the next line
    });

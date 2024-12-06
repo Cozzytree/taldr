@@ -15,7 +15,8 @@ const Canvas = lazy(() => import("@/_canvas/canvas"));
 const Editor = lazy(() => import("@/components/editor"));
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { RefreshCcw } from "lucide-react";
+import { LoaderCircle } from "lucide-react";
+import { useUpdateName } from "@/api/workspace";
 
 interface Workspace {
    shapes: CanvasShape[];
@@ -35,7 +36,11 @@ const useGetShapes = (workspaceId: string) => {
       setloading(true);
       try {
          const res = await fetch(
-            `${import.meta.env.VITE_API_URL}/workspace_data/${workspaceId}`,
+            `${
+               import.meta.env.VITE_MODE === "development"
+                  ? "http://localhost:8080"
+                  : import.meta.env.VITE_API_URL
+            }/workspace_data/${workspaceId}`,
             {
                method: "GET",
             },
@@ -63,6 +68,7 @@ const useGetShapes = (workspaceId: string) => {
 export default function WorkspaceCanvas() {
    const navigate = useNavigate();
    const [mode, setMode] = useState<Mode>("canvas");
+   const { mutate, isLoading: updatingName } = useUpdateName();
    const { user, isLoaded } = useUser();
    const { id } = useParams({ strict: false });
    const { data, isLoading } = useGetShapes(id || "");
@@ -75,15 +81,23 @@ export default function WorkspaceCanvas() {
    }, [user, navigate, isLoaded]);
 
    useEffect(() => {
-      socketRef.current = new WebSocket("ws://3.110.176.229:8080/ws");
+      const url =
+         import.meta.env.VITE_MODE === "development"
+            ? `ws://localhost:8080/ws`
+            : `wss://${import.meta.env.VITE_SOCKET_IP}/ws`;
+      socketRef.current = new WebSocket(url);
 
       if (socketRef?.current) {
          socketRef.current.addEventListener("open", () => {
             toast.success("connected");
          });
 
-         socketRef.current.addEventListener("message", () => {
-            // console.log("data ", JSON.parse(data.data));
+         socketRef.current.addEventListener("message", () => {});
+
+         socketRef.current.addEventListener("error", (err: unknown) => {
+            if (err instanceof Error) {
+               toast.error(`disconnected : ${err.message || "error"}`);
+            }
          });
       }
 
@@ -95,20 +109,51 @@ export default function WorkspaceCanvas() {
    if (isLoading || !isLoaded) {
       return (
          <div className="w-full h-screen flex justify-center items-center">
-            <RefreshCcw className="animate-spin" />
+            <LoaderCircle className="animate-spin" />
          </div>
       );
    }
+
+   let timer: NodeJS.Timeout;
+   const handleSaveDocument = (d: string) => {
+      if (!socketRef.current || !user?.id || !id) return;
+
+      if (timer) {
+         clearTimeout(timer); // Clear the existing timer if there's one already set
+      }
+
+      // Set a new timeout
+      timer = setTimeout(() => {
+         socketRef.current?.send(
+            JSON.stringify({
+               id,
+               type: "doc",
+               document: d,
+               userId: user.id,
+            }),
+         );
+      }, 200); // Delay of 300ms before sending the document
+   };
 
    return (
       <Suspense
          fallback={
             <div className="min-h-screen w-full text-sm text-foreground/60 flex justify-center items-center">
-               <RefreshCcw className="animate-spin" />
+               <LoaderCircle className="animate-spin" />
             </div>
          }
       >
-         <ChangeMode mode={mode} setMode={setMode} name={data?.name}>
+         <ChangeMode
+            onBlur={(n: string) => {
+               if (!id || !user?.id || !id) return;
+               mutate({ workspaceId: id, name: n, userId: user?.id });
+            }}
+            updating={updatingName}
+            isTrial={false}
+            mode={mode}
+            setMode={setMode}
+            name={data?.name}
+         >
             <div
                className={`h-full w-screen grid ${mode === "both" ? "grid-cols-[0.6fr_1fr]" : "grid-cols-1"} overflow-hidden divide-x`}
             >
@@ -120,6 +165,7 @@ export default function WorkspaceCanvas() {
                      userId={user?.id}
                      initialData={data?.document}
                      socket={socketRef.current}
+                     getDocumentData={handleSaveDocument}
                   />
                </div>
                <div className={cn(mode === "editor" && "hidden")}>

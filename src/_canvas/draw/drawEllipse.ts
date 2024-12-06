@@ -44,7 +44,16 @@ const drawEllipse = ({
    ctx.setLineDash([0, 0]);
 
    /* render textI */
-   drawTextInsideShape({ context: ctx, shape });
+   drawTextInsideShape({
+      context: ctx,
+      shape: {
+         ...shape,
+         x: shape.x - (shape.xRadius ?? 0),
+         y: shape.y - (shape.yRadius ?? 0),
+         w: (shape.xRadius ?? 1) * 2,
+         h: (shape.yRadius ?? 1) * 2,
+      },
+   });
 
    if (isActive && activeColor) {
       drawDotsAndRectActive({

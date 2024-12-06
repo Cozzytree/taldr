@@ -184,8 +184,8 @@ const reEvaluateShape = (shape: CanvasShape, allShapes: CanvasShape[]) => {
          break;
       case "others":
          if (shape.props.xRadius){
-            shape.props.h = shape.props.w;
             shape.props.w = shape.props.xRadius * 2;
+            shape.props.h = shape.props.w;
          }
          break;
       default:

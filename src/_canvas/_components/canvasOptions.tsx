@@ -4,7 +4,7 @@ import { cConf } from "../canvasConfig";
 import FillOption from "./fillOption";
 import { Square, Trash } from "lucide-react";
 import TextAlign from "./textalignOption";
-import {useState} from "react";
+import { useState } from "react";
 import OpacityOptions from "@/_canvas/_components/opacityOptions.tsx";
 import LineandradiusOption from "@/_canvas/_components/lineandradiusOption.tsx";
 import ConvertShape from "@/_canvas/_components/convertShape.tsx";
@@ -22,12 +22,12 @@ export default function CanvasOptions({
       if (!canvas.current || !canvas.current.canvasShapes) return;
 
       const opacity = {
-         1 : "ff",
-         0.5 : "50",
-         0 : "ff"
-      }
+         1: "ff",
+         0.5: "50",
+         0: "ff",
+      };
 
-      const currOpac = opacity[currentOpac]
+      const currOpac = opacity[currentOpac];
 
       if (Array.isArray(canvas.current.canvasShapes)) {
          for (let i = 0; i < canvas.current.canvasShapes.length; i++) {
@@ -39,12 +39,9 @@ export default function CanvasOptions({
 
             const { props, type } = canvas.current.canvasShapes[i];
 
-            if (
-               type === "line" ||
-               type === "pencil"
-            ) {
+            if (type === "line" || type === "pencil") {
                props.stroke = color + currOpac;
-            } else if ( type === "text") {
+            } else if (type === "text") {
                props.fontColor = color + currOpac;
             } else {
                props.fill = color + currOpac;
@@ -78,9 +75,9 @@ export default function CanvasOptions({
 
       // Map opacity to corresponding hex values
       const opacityHex = {
-         1: 'ff',
-         0.5: '50',
-         0: '00',
+         1: "ff",
+         0.5: "50",
+         0: "00",
       } as const;
       const opac = opacityHex[opacity];
       // Process canvas shapes
@@ -246,51 +243,62 @@ export default function CanvasOptions({
    };
 
    return (
-     <>
-        <FillOption handleColor={handleColor} handleStrokeColor={handleStrokeColor}/>
+      <>
+         <FillOption
+            handleColor={handleColor}
+            handleStrokeColor={handleStrokeColor}
+         />
 
-            <div className={"w-full b-1 border border-foreground/10 mt-1 mb-1"}/>
+         <div className={"w-full b-1 border border-foreground/10 mt-1 mb-1"} />
 
-            <OpacityOptions
-                setOpac={setCurrentOpac}
-                handlecoloropac={handleColorOpacity}
-            />
-            <LineandradiusOption handleRadius={handleRadius} handleDots={handleDashed} />
-            <FontSizeoption handleFontSize={handleFontSize} handleLineWidth={handleStroke}/>
-            {/* <Forward /> */}
-            {activesShapes > 0 && (
-                <div className={"flex flex-col gap-3 px-2"}>
-                   <div className={"w-full b-1 border border-foreground/10 mt-1 mb-1"}/>
-                   <div className={"flex gap-2"}>
-                      <div
-                          role="button"
-                          onClick={() => handleIndex("bottom")}
-                          className="flex relative px-2"
-                      >
-                         <Square/>
-                         <Square className="absolute top-[0.3em] left-3 bg-background"/>
-                      </div>
-                      <div
-                          role="button"
-                          onClick={() => handleIndex("above")}
-                          className="flex relative px-2"
-                      >
-                         <Square className="z-20 bg-background"/>
-                         <Square className="absolute top-[0.3em] left-[0.3em]"/>
-                      </div>
+         <OpacityOptions
+            setOpac={setCurrentOpac}
+            handlecoloropac={handleColorOpacity}
+         />
+         <LineandradiusOption
+            handleRadius={handleRadius}
+            handleDots={handleDashed}
+         />
+         <FontSizeoption
+            handleFontSize={handleFontSize}
+            handleLineWidth={handleStroke}
+         />
+         {/* <Forward /> */}
+         {activesShapes > 0 && (
+            <div className={"flex flex-col gap-3 px-2"}>
+               <div
+                  className={"w-full b-1 border border-foreground/10 mt-1 mb-1"}
+               />
+               <div className={"flex gap-2"}>
+                  <div
+                     role="button"
+                     onClick={() => handleIndex("bottom")}
+                     className="flex relative px-2"
+                  >
+                     <Square />
+                     <Square className="absolute top-[0.3em] left-3 bg-background" />
+                  </div>
+                  <div
+                     role="button"
+                     onClick={() => handleIndex("above")}
+                     className="flex relative px-2"
+                  >
+                     <Square className="z-20 bg-background" />
+                     <Square className="absolute top-[0.3em] left-[0.3em]" />
+                  </div>
 
-                      <Trash
-                          onClick={() => {
-                             if (!canvas.current) return;
-                             canvas.current.deleteShapes();
-                          }}
-                      />
-                   </div>
-                   <TextAlign handleAlign={handleAlign}/>
+                  <Trash
+                     onClick={() => {
+                        if (!canvas.current) return;
+                        canvas.current.deleteShapes();
+                     }}
+                  />
+               </div>
+               <TextAlign handleAlign={handleAlign} />
 
-                   <ConvertShape canvas={canvas}/>
-                </div>
-            )}
-        </>
+               <ConvertShape canvas={canvas} />
+            </div>
+         )}
+      </>
    );
 }

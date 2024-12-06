@@ -6,6 +6,7 @@ import { drawEllipse } from "./draw/drawEllipse";
 import { drawLine } from "./draw/drawline";
 import { adjustWithandHeightPoints } from "./utils";
 import { drawPencil } from "./draw/drawPencil";
+import { drawImage } from "./draw/drawImage";
 
 const intializeShape = ({
    shapeType,
@@ -85,6 +86,16 @@ const intializeShape = ({
             props: defaultStyle as ShapeProps,
             type: shapeType,
          };
+      case "image":
+         defaultStyle = new DefaultShape({
+            x: initialPoint.x,
+            y: initialPoint.y,
+         });
+         return {
+            id: uuidv4(),
+            props: { ...defaultStyle, image: cConf.image } as ShapeProps,
+            type: shapeType,
+         };
    }
    return null;
 };
@@ -147,6 +158,11 @@ const buildingNewShape = ({
             massiveSelected: false,
          });
          break;
+      case "image":
+         shape.props.w = mouseX - shape.props.x;
+         shape.props.h = mouseY - shape.props.y;
+         if (!shape.props.image) return;
+         drawImage({ ctx, isActive: false, img: shape });
    }
 };
 
@@ -227,6 +243,23 @@ const buildShape = ({
          shape.props.w = Math.max(shape.props.w, 20);
          shape.props.h = Math.max(shape.props.h, 20);
 
+         break;
+      case "image":
+         if (shape.props.x < mouseX) {
+            shape.props.w = mouseX - shape.props.x;
+         } else {
+            shape.props.w = shape.props.x - mouseX;
+            shape.props.x = mouseX;
+         }
+
+         if (shape.props.y < mouseY) {
+            shape.props.h = mouseY - shape.props.y;
+         } else {
+            shape.props.h = shape.props.y - mouseY;
+            shape.props.y = mouseY;
+         }
+         shape.props.w = Math.max(shape.props.w, 20);
+         shape.props.h = Math.max(shape.props.h, 20);
          break;
    }
 };

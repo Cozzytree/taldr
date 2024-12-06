@@ -28,6 +28,7 @@ export type modes =
    | "rect"
    | "ellipse"
    | "hands_free"
+   | "image"
    | "figure";
 
 export interface connectionInterface {
@@ -75,7 +76,9 @@ export interface ShapeProps {
    offsetY: number;
 
    iteration?: number;
-   inset? : number;
+   inset?: number;
+
+   image?: CanvasImageSource;
 }
 
 export interface CanvasShape {

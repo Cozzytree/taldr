@@ -261,47 +261,27 @@ const content = `
 </h2>
 `;
 
-let timer: NodeJS.Timeout;
-const handleSaveDocument = (fn: () => void) => {
-   if (timer) {
-      clearTimeout(timer); // Clear the existing timer if there's one already set
-   }
-
-   // Set a new timeout
-   timer = setTimeout(() => {
-      fn();
-   }, 300); // Delay of 300ms before sending the document
-};
-
 const Editor = ({
    id,
    socket,
    userId,
-   editable = true,
    initialData,
+   editable = true,
+   getDocumentData,
 }: {
    id?: string;
    userId?: string;
    editable?: boolean;
    initialData?: string;
    socket?: WebSocket | undefined;
+   getDocumentData?: (data: string) => void;
 }) => {
    return (
       <EditorProvider
          editable={editable}
          onTransaction={(data) => {
             if (!userId || !id || !socket) return;
-            handleSaveDocument(() => {
-               if (data.editor.getHTML().length === 0) return;
-               socket.send(
-                  JSON.stringify({
-                     id,
-                     userId,
-                     type: "doc",
-                     document: data.editor.getHTML(),
-                  }),
-               );
-            });
+            getDocumentData?.(data.editor.getHTML());
          }}
          slotBefore={<MenuBar />}
          extensions={extensions}

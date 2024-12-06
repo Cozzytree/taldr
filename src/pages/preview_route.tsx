@@ -74,7 +74,7 @@ export default function Preview() {
                </div>
             }
          >
-            <ChangeMode mode={mode} setMode={setMode} name={data?.name}>
+            <ChangeMode isTrial mode={mode} setMode={setMode} name={data?.name}>
                <div
                   className={`h-full w-screen grid ${mode === "both" ? "grid-cols-[0.6fr_1fr]" : "grid-cols-1"} overflow-hidden divide-x`}
                >

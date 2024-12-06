@@ -4,7 +4,7 @@ const Canvas = lazy(() => import("@/_canvas/canvas"));
 import Editor from "@/components/editor";
 import { cn, Mode } from "@/lib/utils";
 import ChangeMode from "@/components/changeMode";
-import { RefreshCcw } from "lucide-react";
+import { LoaderCircle } from "lucide-react";
 
 export default function TrialRoute() {
    const [mode, setMode] = useState<Mode>("canvas");
@@ -13,11 +13,11 @@ export default function TrialRoute() {
       <Suspense
          fallback={
             <div className="h-screen w-full text-sm text-foreground/60 flex justify-center items-center">
-               <RefreshCcw className="animate-spin" />
+               <LoaderCircle className="animate-spin" />
             </div>
          }
       >
-         <ChangeMode mode={mode} setMode={setMode}>
+         <ChangeMode isTrial={true} mode={mode} setMode={setMode}>
             <div
                className={`h-full w-screen grid ${mode === "both" ? "grid-cols-[0.6fr_1fr]" : "grid-cols-1"} overflow-hidden divide-x`}
             >
