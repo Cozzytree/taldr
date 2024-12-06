@@ -84,7 +84,7 @@ export default function WorkspaceCanvas() {
       const url =
          import.meta.env.VITE_MODE === "development"
             ? `ws://localhost:8080/ws`
-            : `wss://${import.meta.env.VITE_API_URL}/ws`;
+            : `wss://${import.meta.env.WEBSOCKET_URL}/ws`;
       socketRef.current = new WebSocket(url);
 
       if (socketRef?.current) {
