@@ -79,12 +79,12 @@ const ConvertShape = ({
         </MenubarTrigger>
         <MenubarContent
           side={"left"}
-          className={"z-[100] grid grid-cols-3 gap-1 bg-foreground/5"}
+          className={"z-[100] grid grid-cols-3 gap-1 bg-accent"}
         >
           {shapes.map((s, i) => (
             <MenubarItem
               key={i}
-              onClick={() =>
+              onPointerDown={() =>
                 handleConvertShape(s.label, s?.iteration, s?.inset)
               }
               className={"w-8 h-8"}

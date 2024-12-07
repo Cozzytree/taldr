@@ -104,7 +104,7 @@ const Canvas = ({
               }}
             />
 
-            <div className="hidden md:flex max-w-[10em] absolute z-[100] top-0 right-0 bg-accent px-2 py-4 rounded-md flex-col gap-3">
+            <div className="hidden md:flex max-w-[10em] absolute z-[100] top-0 right-0 bg-accent p-2 rounded-md flex-col gap-2">
               <CanvasOptions canvas={canvas} activesShapes={activeShapes} />
             </div>
           </>
@@ -121,10 +121,10 @@ const Canvas = ({
                 {(scale * 100).toFixed(0)} %
               </Button>
             </MenubarTrigger>
-            <MenubarContent side="left" align="start">
+            <MenubarContent side="bottom" align="center">
               <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2">
                 <Button
-                  onClick={() => handleZoomInOut(0)}
+                  onPointerDown={() => handleZoomInOut(0)}
                   size="sm"
                   variant={"ghost"}
                 >
@@ -132,7 +132,7 @@ const Canvas = ({
                 </Button>
                 <span className="w-12">{(scale * 100).toFixed(0)} %</span>
                 <Button
-                  onClick={() => handleZoomInOut(1)}
+                  onPointerDown={() => handleZoomInOut(1)}
                   size="sm"
                   variant={"ghost"}
                 >
@@ -140,7 +140,7 @@ const Canvas = ({
                 </Button>
               </div>
               <MenubarItem
-                onClick={() => {
+                onPointerDown={() => {
                   if (!canvas.current) return;
                   if (cConf.offset.x !== 0 || cConf.offset.y !== 0) {
                     cConf.offset = { x: 0, y: 0 };
@@ -150,35 +150,37 @@ const Canvas = ({
               >
                 Center canvas
               </MenubarItem>
-              <MenubarItem
-                onClick={() => {
-                  const link =
-                    import.meta.env.VITE_MODE === "production"
-                      ? `http://localhost:5173/preview/${workspaceId}`
-                      : `https://taldr.netlify.app/preview/${workspaceId}`;
+              {workspaceId !== undefined && (
+                <MenubarItem
+                  onPointerDown={() => {
+                    const link =
+                      import.meta.env.VITE_MODE === "development"
+                        ? `http://localhost:5173/preview/${workspaceId}`
+                        : `https://taldr.netlify.app/preview/${workspaceId}`;
 
-                  navigator.clipboard
-                    .writeText(link)
-                    .then(() => {
-                      toast.success("copied");
-                    })
-                    .catch((err) => {
-                      toast.error("error while copying link : ", err.message);
-                    });
-                }}
-              >
-                <Link2 /> copy link
-              </MenubarItem>
+                    navigator.clipboard
+                      .writeText(link)
+                      .then(() => {
+                        toast.success("copied");
+                      })
+                      .catch((err) => {
+                        toast.error("error while copying link : ", err.message);
+                      });
+                  }}
+                >
+                  <Link2 /> copy link
+                </MenubarItem>
+              )}
             </MenubarContent>
           </MenubarMenu>
         </Menubar>
 
         <canvas
-          className="absolute top-0 left-0 bg-background transition-all duration-200"
+          className="absolute top-0 touch-auto left-0 bg-background transition-all duration-200"
           ref={fallbackCanvasRef}
         ></canvas>
         <canvas
-          className="absolute top-0 left-0 z-50 transition-all duration-200"
+          className="absolute top-0 left-0 z-50 touch-auto transition-all duration-200"
           ref={canvasRef}
         ></canvas>
       </main>

@@ -138,13 +138,15 @@ const ChangeModes = ({
             {mode.name === "image" ? (
               <>
                 <label
+                  onPointerDown={() => changeMode(mode.name)}
                   onClick={() => changeMode(mode.name)}
+                  onTouchStart={() => changeMode(mode.name)}
                   className={cn(
                     buttonVariants({
                       variant: "default",
                       size: "sm",
                     }),
-                    "sm:w-8 sm:h-8 h-fit px-[1.3em] focus:outline-0 outline-0 hover:bg-foreground/10 hover:text-foreground relative",
+                    "w-6 h-6 p-2 sm:w-8 sm:h-8 dm:px-[1.3em] focus:outline-0 outline-0 hover:bg-foreground/10 hover:text-foreground relative",
                     currMode === mode.name
                       ? "bg-foreground"
                       : "bg-background text-foreground",
@@ -152,7 +154,9 @@ const ChangeModes = ({
                   htmlFor="image"
                 >
                   <mode.icon />
-                  <span className="text-xs absolute bottom-0 right-1">{i}</span>
+                  <span className="text-xs hidden sm:block absolute bottom-0 right-1">
+                    {i}
+                  </span>
                 </label>
                 <input
                   onChange={(e) => {
@@ -167,18 +171,21 @@ const ChangeModes = ({
               </>
             ) : (
               <Button
-                onClick={() => changeMode(mode.name)}
-                key={mode.name}
+                onPointerDown={() => {
+                  changeMode(mode.name);
+                }}
                 size="lg"
                 className={cn(
-                  "sm:w-8 sm:h-8 h-fit px-[1.3em] focus:outline-0 outline-0 hover:bg-foreground/10 hover:text-foreground relative",
+                  "w-6 h-6 sm:w-8 sm:h-8 p-2 sm:px-[1.3em] focus:outline-0 outline-0 hover:bg-foreground/10 hover:text-foreground relative",
                   currMode === mode.name
                     ? "bg-foreground"
                     : "bg-background text-foreground",
                 )}
               >
                 <mode.icon />
-                <span className="text-xs absolute bottom-0 right-1">{i}</span>
+                <span className="text-xs hidden sm:block absolute bottom-0 right-1">
+                  {i}
+                </span>
               </Button>
             )}
           </div>
@@ -200,7 +207,7 @@ const ChangeModes = ({
               </MenubarTrigger>
               <MenubarContent
                 className={
-                  "bg-foreground/5 flex flex-col gap-2 p-2 max-w-[10em]"
+                  "bg-foreground/5 flex flex-col gap-2 p-1 max-w-[10em]"
                 }
               >
                 <CanvasOptions activesShapes={activeShapes} canvas={canvas} />

@@ -141,9 +141,8 @@ class CanvasClass {
             const i = new Image();
             i.src = s.props.image;
             this.imageMap.set(s.id, i);
-          } else {
-            this.canvasShapes.push(s);
           }
+          this.canvasShapes.push(s);
         }
       });
     }
@@ -305,6 +304,7 @@ class CanvasClass {
   }
 
   mouse_Down(e: PointerEvent | TouchEvent) {
+    e.preventDefault();
     const { x: mouseX, y: mouseY } = this.getTransformedMouseCoords(e);
     if (!this.isEditable) {
       this.mouseDownPoint = { x: mouseX, y: mouseY };
@@ -449,9 +449,8 @@ class CanvasClass {
   }
 
   mouse_Move(e: PointerEvent | TouchEvent) {
-    const { x: mouseX, y: mouseY } = this.getTransformedMouseCoords(e);
-
     e.preventDefault();
+    const { x: mouseX, y: mouseY } = this.getTransformedMouseCoords(e);
 
     if (this.freeModeIsDown) {
       if (mouseX > this.mouseDownPoint.x) {
@@ -1275,13 +1274,15 @@ class CanvasClass {
     cConf.offset = { x: 0, y: 0 };
 
     // Add event listeners with passive: false
-    document.addEventListener("touchstart", this.mouse_Down);
-    document.addEventListener("touchmove", this.mouse_Move, {
-      passive: true,
+    document.addEventListener("touchstart", this.mouse_Down, {
+      passive: false,
     });
-    document.addEventListener("touchend", this.mouse_Up, { passive: true });
+    document.addEventListener("touchmove", this.mouse_Move, {
+      passive: false,
+    });
+    document.addEventListener("touchend", this.mouse_Up, { passive: false });
     document.addEventListener("touchcancel", this.mouse_Up, {
-      passive: true,
+      passive: false,
     });
 
     // Add pointer event listeners (optional)
