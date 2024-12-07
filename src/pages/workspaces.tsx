@@ -1,361 +1,264 @@
-import { useUpdateDescription, useUpdateName } from "@/api/workspace";
 import {
-   AlertDialog,
-   AlertDialogAction,
-   AlertDialogCancel,
-   AlertDialogContent,
-   AlertDialogFooter,
-   AlertDialogTitle,
-   AlertDialogTrigger,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
-   Dialog,
-   DialogClose,
-   DialogContent,
-   DialogDescription,
-   DialogFooter,
-   DialogHeader,
-   DialogTitle,
-   DialogTrigger,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
-   Menubar,
-   MenubarContent,
-   MenubarItem,
-   MenubarMenu,
-   MenubarTrigger,
+  Menubar,
+  MenubarContent,
+  MenubarItem,
+  MenubarMenu,
+  MenubarTrigger,
 } from "@/components/ui/menubar";
 import { useUser } from "@clerk/clerk-react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
+import { useMutation, useQuery } from "convex/react";
 import { EllipsisVertical, LoaderCircle, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
-
-interface workspace {
-   _id?: string;
-   name: string;
-   userId: string;
-   description: string;
-   shapes: any[];
-}
-
-const useGetWorkspaces = (userId: string | undefined) => {
-   const { isLoading, data, refetch } = useQuery<workspace[] | null>({
-      queryFn: async () => {
-         if (!userId) throw new Error("invalid user");
-
-         const res = await fetch(
-            `${
-               import.meta.env.VITE_MODE === "development"
-                  ? "http://localhost:8080"
-                  : import.meta.env.VITE_API_URL
-            }/user_workspaces/${userId}`,
-         );
-         if (!res.ok) {
-            throw new Error("unknow error");
-         }
-         return await res.json();
-      },
-      queryKey: ["workspaces"],
-      enabled: false,
-   });
-   return { isLoading, data, refetch };
-};
-
-const useCreateWorkspace = () => {
-   const queryClient = useQueryClient();
-   const { mutate, isLoading } = useMutation({
-      mutationFn: async (data: workspace) => {
-         const res = await fetch(
-            `${
-               import.meta.env.VITE_MODE === "development"
-                  ? "http://localhost:8080"
-                  : import.meta.env.VITE_API_URL
-            }/new_workspace`,
-            {
-               method: "POST",
-               headers: {
-                  "Content-Type": "application/json",
-               },
-               body: JSON.stringify(data),
-            },
-         );
-         if (!res.ok) {
-            throw new Error("internnal server error");
-         }
-         return res;
-      },
-      onSuccess: () => {
-         queryClient.invalidateQueries();
-      },
-   });
-   return { mutate, isLoading };
-};
-
-const useDeleteWorkspace = () => {
-   const queryClient = useQueryClient();
-   const { mutate, isLoading } = useMutation({
-      mutationFn: async ({
-         userId,
-         workspaceId,
-      }: {
-         userId: string;
-         workspaceId: string;
-      }) => {
-         try {
-            const res = await fetch(
-               `${
-                  import.meta.env.VITE_MODE === "development"
-                     ? "http://localhost:8080"
-                     : import.meta.env.VITE_API_URLL
-               }/delete_workspace/${workspaceId}/${userId}`,
-               {
-                  method: "DELETE",
-               },
-            );
-
-            if (!res.ok) throw new Error("error while deleteing");
-
-            return res;
-         } catch (err: any) {
-            throw new Error(err.message || "internal server error");
-         }
-      },
-      onSuccess: () => {
-         queryClient.invalidateQueries();
-      },
-   });
-   return { mutate, isLoading };
-};
+import { api } from "../../convex/_generated/api";
+import { toast } from "sonner";
+import { Id } from "convex/_generated/dataModel";
+import { Timeout } from "node_modules/@tanstack/react-router/dist/esm/utils";
 
 export default function Workspaces() {
-   const navigate = useNavigate();
-   const [name, setName] = useState("");
-   const [description, setDescription] = useState("");
-   const { user, isLoaded } = useUser();
-   const { data, isLoading, refetch } = useGetWorkspaces(user?.id);
+  const navigate = useNavigate();
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const { user, isLoaded } = useUser();
+  const workspaces = useQuery(api.workspaces.getuserWorkspaces, {
+    userId: user?.id || "",
+  });
+  const createWorkspace = useMutation(api.workspaces.createWorkspace);
+  const deleteWorkspace = useMutation(api.workspaces.deleteWorkspace);
+  const updateWorkspaceName = useMutation(api.workspaces.updateWorkspaceName);
+  const updateWorkspaceDescription = useMutation(
+    api.workspaces.updateWorkspaceDescription,
+  );
 
-   const { isLoading: updatingName, mutate: updateName } = useUpdateName();
-   const { isLoading: updatingDescription, mutate: updateDescription } =
-      useUpdateDescription();
+  useEffect(() => {}, [user]);
 
-   const { mutate, isLoading: creatingWorkspace } = useCreateWorkspace();
-   const { mutate: deleteWorkspace, isLoading: deletingWorkspace } =
-      useDeleteWorkspace();
-
-   useEffect(() => {
-      if (isLoaded && user?.id) {
-         refetch();
-      }
-   }, [user, isLoaded, refetch]);
-
-   if (isLoading && !isLoaded) {
-      return (
-         <div className="min-h-screen w-full flex justify-center items-center">
-            <LoaderCircle className="animate-spin" />
-         </div>
-      );
-   }
-
-   if (isLoaded && !user?.id && !isLoading && !data) {
-      navigate({ to: "/" });
-   }
-
-   const handleCreate = () => {
-      if (!user?.id || name == "") return;
-      mutate(
-         {
-            name,
-            shapes: [],
-            description,
-            userId: user.id,
-         },
-         {
-            onSuccess: () => {
-               refetch();
-            },
-         },
-      );
-   };
-
-   const handleDeleteWorkspace = (id: string | undefined) => {
-      if (!user?.id || !id) return;
-      deleteWorkspace(
-         { userId: user.id, workspaceId: id },
-         {
-            onSuccess: () => {
-               refetch();
-            },
-         },
-      );
-   };
-
-   const handleUpdate = (n: string, d: string, id: string) => {
-      if (!user?.id) return;
-      updateName({ name: n, userId: user?.id, workspaceId: id });
-      updateDescription({ description: d, userId: user.id, workspaceId: id });
-   };
-
-   return (
-      <div className="min-h-screen w-full flex flex-col items-center gap-10 justify-start">
-         {(updatingDescription || updatingName) && (
-            <div className="fixed bottom-6 right-4 z-50 p-2 bg-accent rounded-md flex items-center gap-2">
-               <span className="text-sm">Updating...</span>
-               <LoaderCircle className="animate-spin" />
-            </div>
-         )}
-
-         <div className="w-full py-4 flex justify-between items-center px-3 sm:px-10">
-            <h1 className="text-xl font-semibold text-start w-full">
-               Workspaces
-            </h1>
-            <div>
-               <Dialog>
-                  <DialogTrigger asChild>
-                     <Button size={"sm"} variant={"outline"}>
-                        Create workspace <Plus />
-                     </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                     <DialogHeader>
-                        <DialogTitle>New Workspace</DialogTitle>
-                     </DialogHeader>
-                     <Input
-                        placeholder="Name..."
-                        type="text"
-                        onChange={(e) => setName(e.target.value)}
-                     />
-                     <Input
-                        placeholder="Description..."
-                        type="text"
-                        onChange={(e) => setDescription(e.target.value)}
-                     />
-
-                     <Button
-                        disabled={creatingWorkspace}
-                        onClick={handleCreate}
-                     >
-                        Save
-                     </Button>
-                  </DialogContent>
-               </Dialog>
-            </div>
-         </div>
-
-         <div className="flex flex-col gap-2 w-full sm:container mb-10">
-            {data &&
-               data.map((w, i) => (
-                  <Card key={i}>
-                     <CardHeader>
-                        <div className="w-full flex items-center justify-between">
-                           <Link
-                              className={`${buttonVariants({ variant: "link", size: "sm" })} text-[1em]`}
-                              href={`/workspace/${w._id}`}
-                           >
-                              {w.name}
-                           </Link>
-
-                           <AlertDialog>
-                              <Dialog>
-                                 <Menubar>
-                                    <MenubarMenu>
-                                       <MenubarTrigger asChild>
-                                          <button>
-                                             <EllipsisVertical />
-                                          </button>
-                                       </MenubarTrigger>
-                                       <MenubarContent>
-                                          <AlertDialogTrigger asChild>
-                                             <MenubarItem>Delete</MenubarItem>
-                                          </AlertDialogTrigger>
-                                          <UpdateDetails
-                                             n={w.name}
-                                             d={w.description}
-                                             fn={handleUpdate}
-                                             id={w._id || ""}
-                                             key={w._id}
-                                          />
-                                       </MenubarContent>
-                                    </MenubarMenu>
-                                 </Menubar>
-
-                                 <AlertDialogContent>
-                                    <AlertDialogTitle>
-                                       Are you sure you want to delete?
-                                    </AlertDialogTitle>
-                                    <AlertDialogFooter>
-                                       <AlertDialogCancel
-                                          className={`${buttonVariants({ variant: "outline", size: "sm" })}`}
-                                       >
-                                          cancel
-                                       </AlertDialogCancel>
-                                       <AlertDialogAction
-                                          disabled={deletingWorkspace}
-                                          onClick={() =>
-                                             handleDeleteWorkspace(w._id)
-                                          }
-                                          className={`${buttonVariants({ variant: "destructive", size: "sm" })}`}
-                                       >
-                                          confirm
-                                       </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                 </AlertDialogContent>
-                              </Dialog>
-                           </AlertDialog>
-                        </div>
-                     </CardHeader>
-                     <CardContent className="text-foreground/60 text-sm">
-                        {w.description}
-                     </CardContent>
-                  </Card>
-               ))}
-         </div>
+  if (!workspaces || !isLoaded) {
+    return (
+      <div className="min-h-screen w-full flex justify-center items-center">
+        <LoaderCircle className="animate-spin" />
       </div>
-   );
+    );
+  }
+
+  if (isLoaded && !user?.id && !workspaces) {
+    navigate({ to: "/" });
+  }
+
+  const handleCreateWorkspace = async () => {
+    if (!user?.id) return;
+    await createWorkspace({ name, description, userId: user?.id })
+      .then(() => {
+        toast.success("successfully deleted");
+      })
+      .catch((err) => {
+        toast.error(err.message);
+      });
+  };
+
+  const handleDeleteWorkspace = async (id: Id<"workspaces">) => {
+    if (!user?.id) return;
+    await deleteWorkspace({ id, userId: user.id })
+      .then(() => {
+        toast.success("successfully deleted");
+      })
+      .catch((err) => {
+        toast.error(err.message);
+      });
+  };
+
+  const handleUpdateName = () => {
+    let timer: Timeout;
+    return async (name: string, id: Id<"workspaces">) => {
+      if (timer) {
+        clearTimeout(timer);
+      }
+      timer = setTimeout(async () => {
+        if (!user?.id) return;
+        await updateWorkspaceName({ userId: user.id, id, name });
+      }, 200);
+    };
+  };
+
+  const handleUpdateDescription = () => {
+    let timer: Timeout;
+    return async (description: string, id: Id<"workspaces">) => {
+      if (timer) {
+        clearTimeout(timer);
+      }
+
+      timer = setTimeout(async () => {
+        if (!user?.id) return;
+        await updateWorkspaceDescription({ description, userId: user.id, id });
+      }, 200);
+    };
+  };
+
+  return (
+    <div className="min-h-screen w-full flex flex-col items-center gap-10 justify-start">
+      <div className="w-full py-4 flex justify-between items-center px-3 sm:px-10">
+        <h1 className="text-xl font-semibold text-start w-full">Workspaces</h1>
+        <div>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button size={"sm"} variant={"outline"}>
+                Create workspace <Plus />
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>New Workspace</DialogTitle>
+              </DialogHeader>
+              <Input
+                placeholder="Name..."
+                type="text"
+                onChange={(e) => setName(e.target.value)}
+              />
+              <Input
+                placeholder="Description..."
+                type="text"
+                onChange={(e) => setDescription(e.target.value)}
+              />
+
+              <Button onClick={handleCreateWorkspace}>Save</Button>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-2 w-full sm:container mb-10">
+        {!workspaces.length ? (
+          <div className="w-full flex justify-center text-sm">Empty</div>
+        ) : (
+          workspaces.map((w, i) => (
+            <Card key={i}>
+              <CardHeader>
+                <div className="w-full flex items-center justify-between">
+                  <Link
+                    className={`${buttonVariants({ variant: "link", size: "sm" })} text-[1em]`}
+                    href={`/workspace/${w._id}`}
+                  >
+                    {w.name}
+                  </Link>
+
+                  <AlertDialog>
+                    <Dialog>
+                      <Menubar>
+                        <MenubarMenu>
+                          <MenubarTrigger asChild>
+                            <button>
+                              <EllipsisVertical />
+                            </button>
+                          </MenubarTrigger>
+                          <MenubarContent>
+                            <AlertDialogTrigger asChild>
+                              <MenubarItem>Delete</MenubarItem>
+                            </AlertDialogTrigger>
+                            <DialogTrigger>
+                              <MenubarItem>Update</MenubarItem>
+                            </DialogTrigger>
+                          </MenubarContent>
+                        </MenubarMenu>
+                      </Menubar>
+
+                      <UpdateDetails
+                        n={w.name}
+                        id={w._id}
+                        key={w._id}
+                        d={w.description}
+                        handleUpdateName={handleUpdateName}
+                        handleUpdateDescription={handleUpdateDescription}
+                      />
+                    </Dialog>
+
+                    <AlertDialogContent>
+                      <AlertDialogTitle>
+                        Are you sure you want to delete?
+                      </AlertDialogTitle>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel
+                          className={`${buttonVariants({ variant: "outline", size: "sm" })}`}
+                        >
+                          cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => handleDeleteWorkspace(w._id)}
+                          className={`${buttonVariants({ variant: "destructive", size: "sm" })}`}
+                        >
+                          confirm
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </CardHeader>
+              <CardContent className="text-foreground/60 text-sm">
+                {w.description}
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
+    </div>
+  );
 }
 
 const UpdateDetails = ({
-   n,
-   d,
-   fn,
-   id,
+  n,
+  d,
+  id,
+  handleUpdateName,
+  handleUpdateDescription,
 }: {
-   id: string;
-   n: string;
-   d: string;
-   fn: (n: string, d: string, id: string) => void;
+  n: string;
+  d: string;
+  id: Id<"workspaces">;
+  handleUpdateName: () => (name: string, id: Id<"workspaces">) => Promise<void>;
+  handleUpdateDescription: () => (
+    description: string,
+    id: Id<"workspaces">,
+  ) => Promise<void>;
 }) => {
-   const [name, setName] = useState(n);
-   const [description, setDescription] = useState(d);
-   return (
-      <>
-         <DialogTrigger>
-            <MenubarItem>Update</MenubarItem>
-         </DialogTrigger>
-         <DialogContent>
-            <DialogTitle>Update</DialogTitle>
-            <DialogDescription>
-               <Input
-                  defaultValue={name}
-                  type="text"
-                  onChange={(e) => setName(e.target.value)}
-               />
-               <Input
-                  defaultValue={description}
-                  type="text"
-                  onChange={(e) => setDescription(e.target.value)}
-               />
-            </DialogDescription>
-            <DialogFooter>
-               <DialogClose>cancel</DialogClose>
-               <DialogClose onClick={() => fn(name, description, id)}>
-                  update
-               </DialogClose>
-            </DialogFooter>
-         </DialogContent>
-      </>
-   );
+  return (
+    <>
+      <DialogContent>
+        <DialogTitle>Update</DialogTitle>
+        <DialogDescription className="space-y-3">
+          <Input
+            defaultValue={n}
+            type="text"
+            onChange={(e) => {
+              handleUpdateName()(e.target.value, id);
+            }}
+            className="text-foreground"
+          />
+          <Input
+            defaultValue={d}
+            placeholder="description"
+            type="text"
+            onChange={(e) => handleUpdateDescription()(e.target.value, id)}
+          />
+        </DialogDescription>
+      </DialogContent>
+    </>
+  );
 };

@@ -1,183 +1,134 @@
-import {
-   lazy,
-   Suspense,
-   useCallback,
-   useEffect,
-   useRef,
-   useState,
-} from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 
+import { CanvasShape } from "@/_canvas/canvasTypes";
+import ChangeMode from "@/components/changeMode";
 import { cn, Mode } from "@/lib/utils";
 import { useUser } from "@clerk/clerk-react";
-import ChangeMode from "@/components/changeMode";
-import { CanvasShape } from "@/_canvas/canvasTypes";
+import { useNavigate, useParams } from "@tanstack/react-router";
+import { api } from "../../convex/_generated/api";
+import { Id } from "convex/_generated/dataModel";
+import { useMutation, useQuery } from "convex/react";
+import { LoaderCircle } from "lucide-react";
+import { Timeout } from "node_modules/@tanstack/react-router/dist/esm/utils";
 const Canvas = lazy(() => import("@/_canvas/canvas"));
 const Editor = lazy(() => import("@/components/editor"));
-import { useNavigate, useParams } from "@tanstack/react-router";
-import { toast } from "sonner";
-import { LoaderCircle } from "lucide-react";
-import { useUpdateName } from "@/api/workspace";
-
-interface Workspace {
-   shapes: CanvasShape[];
-   _id: string;
-   description: string;
-   name: string;
-   userId: string;
-   document: string;
-}
-
-const useGetShapes = (workspaceId: string) => {
-   const [isLoading, setloading] = useState(false);
-
-   const [data, setData] = useState<Workspace | null>(null);
-
-   const fetchShapes = useCallback(async () => {
-      setloading(true);
-
-      const url = `${
-         import.meta.env.VITE_MODE === "development"
-            ? "http://localhost:8080"
-            : import.meta.env.VITE_API_URL
-      }/workspace_data/${workspaceId}`;
-      try {
-         const res = await fetch(url, {
-            method: "GET",
-         });
-         const data = await res.json();
-         setData(data);
-      } catch (err: unknown) {
-         if (err instanceof Error) {
-            throw new Error(err.message || "unknown error");
-         } else {
-            throw new Error("unknown error");
-         }
-      } finally {
-         setloading(false);
-      }
-   }, [workspaceId]);
-
-   useEffect(() => {
-      if (workspaceId) fetchShapes();
-   }, [workspaceId, fetchShapes]);
-
-   return { isLoading, data };
-};
 
 export default function WorkspaceCanvas() {
-   const navigate = useNavigate();
-   const [mode, setMode] = useState<Mode>("canvas");
-   const { mutate, isLoading: updatingName } = useUpdateName();
-   const { user, isLoaded } = useUser();
-   const { id } = useParams({ strict: false });
-   const { data, isLoading } = useGetShapes(id || "");
-   const socketRef = useRef<WebSocket | undefined>(undefined);
+  const navigate = useNavigate();
+  const { user, isLoaded } = useUser();
+  const { id } = useParams({ strict: false });
+  const [mode, setMode] = useState<Mode>("canvas");
+  const workspaceData = useQuery(api.workspaces.getWorkspace, {
+    id: (id as Id<"workspaces">) || ("" as Id<"workspaces">),
+    userId: user?.id || "",
+  });
+  const updateName = useMutation(api.workspaces.updateWorkspaceName);
+  const updateShapes = useMutation(api.workspaces.updateShapes);
+  const updateDocument = useMutation(api.workspaces.updateDocument);
 
-   useEffect(() => {
-      if (!user?.id && isLoaded) {
-         navigate({ to: "/trial" });
-      }
-   }, [user, navigate, isLoaded]);
+  useEffect(() => {
+    if (!user?.id && isLoaded) {
+      navigate({ to: "/trial" });
+    }
+  }, [user, navigate, isLoaded]);
 
-   useEffect(() => {
-      const url =
-         import.meta.env.VITE_MODE === "development"
-            ? `ws://localhost:8080/ws`
-            : `wss://43.204.145.218:8080/ws`;
-      // `wss://${import.meta.env.VITE_WEBSOCKET_URL}/ws`;
-      socketRef.current = new WebSocket(url);
+  if (!workspaceData || !isLoaded) {
+    return (
+      <div className="w-full h-screen flex justify-center items-center">
+        <LoaderCircle className="animate-spin" />
+      </div>
+    );
+  }
 
-      if (socketRef?.current) {
-         socketRef.current.addEventListener("open", () => {
-            toast.success("connected");
-         });
-
-         socketRef.current.addEventListener("message", () => {});
-
-         socketRef.current.addEventListener("error", (err: unknown) => {
-            if (err instanceof Error) {
-               toast.error(`disconnected : ${err.message || "error"}`);
-            }
-         });
-      }
-
-      return () => {
-         socketRef.current?.close();
-      };
-   }, []);
-
-   if (isLoading || !isLoaded) {
-      return (
-         <div className="w-full h-screen flex justify-center items-center">
-            <LoaderCircle className="animate-spin" />
-         </div>
-      );
-   }
-
-   let timer: NodeJS.Timeout;
-   const handleSaveDocument = (d: string) => {
-      if (!socketRef.current || !user?.id || !id) return;
-
+  const handleUpdateShapes = () => {
+    let timer: Timeout;
+    return (shapes: CanvasShape[]) => {
       if (timer) {
-         clearTimeout(timer); // Clear the existing timer if there's one already set
+        clearTimeout(timer);
       }
 
-      // Set a new timeout
       timer = setTimeout(() => {
-         socketRef.current?.send(
-            JSON.stringify({
-               id,
-               type: "doc",
-               document: d,
-               userId: user.id,
-            }),
-         );
-      }, 200); // Delay of 300ms before sending the document
-   };
+        if (!user?.id || !id) return;
+        updateShapes({
+          userId: user.id,
+          workspaceId: id as Id<"workspaces">,
+          shapes: JSON.stringify(shapes),
+        });
+      }, 300);
+    };
+  };
 
-   return (
-      <Suspense
-         fallback={
-            <div className="min-h-screen w-full text-sm text-foreground/60 flex justify-center items-center">
-               <LoaderCircle className="animate-spin" />
-            </div>
-         }
+  const handleUpdateName = () => {
+    let timer: Timeout;
+    return (name: string) => {
+      if (timer) {
+        clearTimeout(timer);
+      }
+      timer = setTimeout(() => {
+        if (!user?.id || !id) return;
+        updateName({ userId: user.id, id: id as Id<"workspaces">, name });
+      }, 300);
+    };
+  };
+
+  const handleUpdateDocument = () => {
+    let timer: Timeout;
+    return (document: string) => {
+      if (timer) {
+        clearTimeout(timer);
+      }
+      timer = setTimeout(() => {
+        if (!user?.id || !id) return;
+        updateDocument({
+          document,
+          userId: user.id,
+          workspaceId: id as Id<"workspaces">,
+        });
+      }, 300);
+    };
+  };
+
+  const shapes: CanvasShape[] =
+    workspaceData.shapes.length > 0 ? JSON.parse(workspaceData.shapes) : [];
+
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen w-full text-sm text-foreground/60 flex justify-center items-center">
+          <LoaderCircle className="animate-spin" />
+        </div>
+      }
+    >
+      <ChangeMode
+        updateName={handleUpdateName}
+        isTrial={false}
+        mode={mode}
+        setMode={setMode}
+        name={workspaceData.name}
       >
-         <ChangeMode
-            onBlur={(n: string) => {
-               if (!id || !user?.id || !id) return;
-               mutate({ workspaceId: id, name: n, userId: user?.id });
-            }}
-            updating={updatingName}
-            isTrial={false}
-            mode={mode}
-            setMode={setMode}
-            name={data?.name}
-         >
-            <div
-               className={`h-full w-screen grid ${mode === "both" ? "grid-cols-[0.6fr_1fr]" : "grid-cols-1"} overflow-hidden divide-x`}
-            >
-               <div
-                  className={`${mode === "canvas" ? "hidden" : "grid"} grid-rows-[auto_1fr] h-screen overflow-y-auto no-scrollbar-guide`}
-               >
-                  <Editor
-                     id={id}
-                     userId={user?.id}
-                     initialData={data?.document}
-                     socket={socketRef.current}
-                     getDocumentData={handleSaveDocument}
-                  />
-               </div>
-               <div className={cn(mode === "editor" && "hidden")}>
-                  <Canvas
-                     workspaceId={id}
-                     userId={user?.id}
-                     socketRef={socketRef.current}
-                     initialShapes={data?.shapes}
-                  />
-               </div>
-            </div>
-         </ChangeMode>
-      </Suspense>
-   );
+        <div
+          className={`h-full w-screen grid ${mode === "both" ? "grid-cols-[0.6fr_1fr]" : "grid-cols-1"} overflow-hidden divide-x`}
+        >
+          <div
+            className={`${mode === "canvas" ? "hidden" : "grid"} grid-rows-[auto_1fr] h-screen overflow-y-auto no-scrollbar-guide`}
+          >
+            <Editor
+              id={id}
+              userId={user?.id}
+              initialData={workspaceData?.document}
+              handleUpdateDocument={handleUpdateDocument}
+            />
+          </div>
+          <div className={cn(mode === "editor" && "hidden")}>
+            <Canvas
+              workspaceId={id}
+              userId={user?.id}
+              handleUpdateShapes={handleUpdateShapes}
+              initialShapes={shapes}
+            />
+          </div>
+        </div>
+      </ChangeMode>
+    </Suspense>
+  );
 }
