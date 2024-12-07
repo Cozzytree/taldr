@@ -69,7 +69,6 @@ const ConvertShape = ({
       canvas.current.canvasShapes[shape].type = type;
     }
     canvas.current.draw();
-    console.log(canvas.current.canvasShapes[shape]);
   };
 
   return (

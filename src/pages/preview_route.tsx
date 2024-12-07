@@ -1,14 +1,13 @@
-import { lazy, Suspense } from "react";
+import ChangeMode from "@/components/changeMode";
+import { Mode } from "@/lib/utils";
+import { useParams } from "@tanstack/react-router";
+import { Id } from "convex/_generated/dataModel";
+import { useQuery } from "convex/react";
+import { LoaderCircle } from "lucide-react";
+import { lazy, Suspense, useState } from "react";
+import { api } from "../../convex/_generated/api";
 const Canvas = lazy(() => import("@/_canvas/canvas"));
 const Editor = lazy(() => import("@/components/editor"));
-import { useParams } from "@tanstack/react-router";
-import { useState } from "react";
-import { LoaderCircle, LoaderIcon } from "lucide-react";
-import { Mode } from "@/lib/utils";
-import ChangeMode from "@/components/changeMode";
-import { api } from "../../convex/_generated/api";
-import { useQuery } from "convex/react";
-import { Id } from "convex/_generated/dataModel";
 
 export default function Preview() {
   const { id } = useParams({ strict: false });
