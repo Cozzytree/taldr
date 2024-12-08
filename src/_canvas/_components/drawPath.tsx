@@ -31,6 +31,8 @@ const drawPath = ({
     w,
     h,
     inset,
+    radius,
+    shouldAddarc,
   } = shape.props;
 
   if (!iteration) return;
@@ -45,9 +47,16 @@ const drawPath = ({
   ctx.moveTo(0, 0 - (xRadius ?? 0));
   for (let i = 0; i < iteration; i++) {
     ctx.rotate(Math.PI / iteration);
+    if (shouldAddarc) {
+      ctx.arcTo(0, 0, 0, 0, radius);
+    }
     ctx.lineTo(0, 0 - (xRadius ?? 0) * (inset ?? 0));
     ctx.rotate(Math.PI / iteration);
     ctx.lineTo(0, 0 - (xRadius ?? 0));
+
+    if (shouldAddarc) {
+      ctx.arcTo(0, 0, 0, 0, radius);
+    }
   }
 
   ctx.fill();

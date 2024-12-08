@@ -1,4 +1,5 @@
 import { Mode } from "@/lib/utils";
+import { Link } from "@tanstack/react-router";
 import React, { useEffect, useState } from "react";
 
 export default function ChangeMode({
@@ -32,7 +33,9 @@ export default function ChangeMode({
     <div className="grid grid-rows-[auto_1fr] h-screen items-center">
       <div className="flex justify-center py-1 border border-b-foreground/20 relative">
         {isTrial ? (
-          <h2 className="absolute left-2 top-1">Trial</h2>
+          <Link href="/" className="absolute left-2 top-1">
+            Taldr
+          </Link>
         ) : (
           <>
             {!isFocused && !updating ? (

@@ -110,8 +110,11 @@ const Canvas = ({
         setScale(cConf.scale.x);
       },
       updateaftermouseup: ({ shapes }) => {
-        if (!userId || !workspaceId) return;
-        handleUpdateShapes?.()(shapes);
+        if (userId && workspaceId) {
+          handleUpdateShapes?.()(shapes);
+        } else {
+          localStorage.setItem("canvasStore", JSON.stringify(shapes));
+        }
       },
     });
 
@@ -257,6 +260,32 @@ const Canvas = ({
                     Hide ui
                   </MenubarItem>
                 )}
+
+                <MenubarItem
+                  onClick={() => {
+                    if (!canvas.current) return;
+                    const newCanvas = document.createElement("canvas");
+                    newCanvas.width = canvas.current.canvas.width;
+                    newCanvas.height = canvas.current.canvas.height;
+                    const newCtx = newCanvas.getContext("2d");
+                    if (!newCtx) {
+                      toast.error("error while converting to image");
+                      return;
+                    }
+                    newCtx.fillStyle = "#202020";
+                    newCtx.fillRect(0, 0, newCanvas.width, newCanvas.height);
+                    newCtx.drawImage(canvas.current.canvas, 0, 0);
+                    newCanvas.style.background = "#202020";
+
+                    const c = newCanvas.toDataURL("image/png", 100);
+                    const l = document.createElement("a");
+                    l.href = c;
+                    l.download = "canvasimage.png";
+                    l.click();
+                  }}
+                >
+                  Save as Image
+                </MenubarItem>
               </MenubarContent>
             </MenubarMenu>
           </Menubar>

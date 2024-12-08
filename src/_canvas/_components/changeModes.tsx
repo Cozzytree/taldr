@@ -40,16 +40,16 @@ const ChangeModes = ({
         const ctx = canvas.getContext("2d");
 
         // Set the canvas size to match the image size
-        canvas.width = imgElement.width * 0.7;
-        canvas.height = imgElement.height * 0.7;
+        canvas.width = imgElement.width * 0.9;
+        canvas.height = imgElement.height * 0.9;
 
         // Draw the image onto the canvas
         ctx?.drawImage(
           imgElement,
           0,
           0,
-          imgElement.width * 0.7,
-          imgElement.height * 0.7,
+          imgElement.width * 0.9,
+          imgElement.height * 0.9,
         );
 
         // Export the image at a lower quality (e.g., 0.5 means 50% quality)
@@ -71,7 +71,7 @@ const ChangeModes = ({
 
   return (
     <>
-      <div className="fixed bottom-8 left-[50%] z-[100] translate-x-[-50%] flex items-center divide-x-2 border border-accent">
+      <div className="absolute bottom-20  md:bottom-16 left-[50%] z-[100] translate-x-[-50%] flex items-center divide-x-2 border border-accent">
         {modes.map((mode, i) => (
           <div key={i}>
             {mode.name === "image" ? (

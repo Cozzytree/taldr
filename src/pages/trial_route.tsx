@@ -1,11 +1,11 @@
+import { cn, Mode } from "@/lib/utils";
+import { LoaderCircle } from "lucide-react";
 import { lazy, Suspense, useState } from "react";
+import { CanvasShape } from "@/_canvas/canvasTypes";
+const Editor = lazy(() => import("@/components/editor"));
+const ChangeMode = lazy(() => import("@/components/changeMode"));
 
 const Canvas = lazy(() => import("@/_canvas/canvas"));
-import Editor from "@/components/editor";
-import { cn, Mode } from "@/lib/utils";
-import ChangeMode from "@/components/changeMode";
-import { LoaderCircle } from "lucide-react";
-import { CanvasShape } from "@/_canvas/canvasTypes";
 
 const initialShapes: CanvasShape[] = [
   {
@@ -39,6 +39,8 @@ const initialShapes: CanvasShape[] = [
 
 export default function TrialRoute() {
   const [mode, setMode] = useState<Mode>("canvas");
+  const canvasData = localStorage.getItem("canvasStore");
+  const shapes = canvasData ? JSON.parse(canvasData) : initialShapes;
 
   return (
     <Suspense
@@ -60,7 +62,7 @@ export default function TrialRoute() {
           <div className={cn(mode === "editor" && "hidden")}>
             <Canvas
               isPreview={false}
-              initialShapes={initialShapes}
+              initialShapes={shapes}
               userId={undefined}
               workspaceId={undefined}
             />

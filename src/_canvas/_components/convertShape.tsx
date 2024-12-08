@@ -1,8 +1,11 @@
 import {
   BombIcon,
   Circle,
+  Diamond,
+  Fan,
   LucideIcon,
   Octagon,
+  // Pentagon,
   Square,
   Star,
   Triangle,
@@ -23,13 +26,40 @@ const shapes: {
   Icon: LucideIcon;
   iteration?: number;
   inset?: number;
+  shouldAddarc?: boolean;
 }[] = [
   { label: "triangle", Icon: Triangle },
-  { label: "others", Icon: Octagon, iteration: 8, inset: 1.1 },
-  { label: "others", Icon: Star, iteration: 6, inset: 0.58 },
-  { label: "others", Icon: BombIcon, iteration: 12, inset: 0.58 },
+  {
+    label: "others",
+    Icon: Octagon,
+    iteration: 8,
+    inset: 1.1,
+    shouldAddarc: false,
+  },
+  {
+    label: "others",
+    Icon: Star,
+    iteration: 6,
+    inset: 0.58,
+    shouldAddarc: false,
+  },
+  {
+    label: "others",
+    Icon: BombIcon,
+    iteration: 12,
+    inset: 0.58,
+    shouldAddarc: false,
+  },
+  {
+    label: "others",
+    Icon: Diamond,
+    iteration: 2,
+    inset: 1,
+    shouldAddarc: false,
+  },
   { label: "ellipse", Icon: Circle },
   { label: "rect", Icon: Square },
+  { label: "others", Icon: Fan, iteration: 6, inset: 0.6, shouldAddarc: true },
 ];
 
 const ConvertShape = ({
@@ -41,6 +71,7 @@ const ConvertShape = ({
     type: shapeType,
     iteration?: number,
     inset?: number,
+    shouldAddarc?: boolean,
   ) => {
     if (!canvas.current || !canvas.current.canvasShapes) return;
     let shape: number | null = null;
@@ -59,6 +90,13 @@ const ConvertShape = ({
     if (shape === null) return;
     if (iteration) {
       canvas.current.canvasShapes[shape].type = type;
+
+      if (shouldAddarc === true) {
+        canvas.current.canvasShapes[shape].props.shouldAddarc = true;
+      } else if (shouldAddarc === false) {
+        canvas.current.canvasShapes[shape].props.shouldAddarc = false;
+      }
+
       canvas.current.canvasShapes[shape].props.xRadius =
         canvas.current.canvasShapes[shape].props.w * 0.5;
       canvas.current.canvasShapes[shape].props.iteration = iteration;
@@ -85,13 +123,34 @@ const ConvertShape = ({
             <MenubarItem
               key={i}
               onPointerDown={() =>
-                handleConvertShape(s.label, s?.iteration, s?.inset)
+                handleConvertShape(
+                  s.label,
+                  s?.iteration,
+                  s?.inset,
+                  s?.shouldAddarc,
+                )
               }
               className={"w-8 h-8"}
             >
               <s.Icon key={s.label} />
             </MenubarItem>
           ))}
+          <MenubarItem>
+            <svg
+              width="28px"
+              height="28px"
+              fill="none"
+              viewBox="0 0 48 48"
+              xmlns="http://www.w3.org/2000/svg"
+              className=""
+            >
+              <path
+                d="M41.2796 8H15.4704C14.5956 8 13.8223 8.5685 13.5614 9.40345L4.81142 37.4035C4.40897 38.6913 5.3711 40 6.72038 40H32.5296C33.4044 40 34.1777 39.4315 34.4386 38.5965L43.1886 10.5965C43.591 9.30869 42.6289 8 41.2796 8Z"
+                stroke="white"
+                strokeWidth={4}
+              />
+            </svg>
+          </MenubarItem>
         </MenubarContent>
       </MenubarMenu>
     </Menubar>

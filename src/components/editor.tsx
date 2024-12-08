@@ -1,7 +1,6 @@
 import StarterKit from "@tiptap/starter-kit";
 import ListItem from "@tiptap/extension-list-item";
 import TextStyle from "@tiptap/extension-text-style";
-
 import { Color } from "@tiptap/extension-color";
 import { EditorProvider, useCurrentEditor } from "@tiptap/react";
 import { Button } from "./ui/button";

@@ -1,20 +1,21 @@
 // import { StrictMode } from "react";
+import { lazy } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
-import App from "./App.tsx";
+const App = lazy(() => import("./App.tsx"));
+const Workspaces = lazy(() => import("./pages/workspaces.tsx"));
+const Preview = lazy(() => import("./pages/preview_route.tsx"));
+const IndexRoute = lazy(() => import("./pages/index_route.tsx"));
+const TrialRoute = lazy(() => import("./pages/trial_route.tsx"));
+const WorkspaceCanvas = lazy(() => import("./pages/worksapce_canvas.tsx"));
 import {
   createRootRoute,
   createRoute,
   createRouter,
   RouterProvider,
 } from "@tanstack/react-router";
-import Workspaces from "./pages/workspaces.tsx";
-import IndexRoute from "./pages/index_route.tsx";
-import WorkspaceCanvas from "./pages/worksapce_canvas.tsx";
 import { ClerkProvider, useAuth } from "@clerk/clerk-react";
 import { Toaster } from "./components/ui/sonner.tsx";
-import TrialRoute from "./pages/trial_route.tsx";
-import Preview from "./pages/preview_route.tsx";
 import { ConvexReactClient } from "convex/react";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
 

@@ -175,19 +175,39 @@ class CanvasClass {
 
     this.canvasShapes.forEach((shape) => {
       if (!shape) return;
-      if (
-        (shape.props.x + shape.props.w * 0.8 - cConf.offset.x) *
-          cConf.scale.x <=
-          0 ||
-        shape.props.x + shape.props.w * 0.2 - cConf.offset.x > this.canvas.width
-      )
-        return;
-      if (
-        shape.props.y - cConf.offset.y + shape.props.h * 0.8 <= 0 ||
-        shape.props.y + shape.props.h * 0.2 - cConf.offset.y >
-          this.canvas.height
-      )
-        return;
+
+      if (cConf.scale.x === 1) {
+        if (
+          (shape.props.x + shape.props.w - cConf.offset.x) / cConf.scale.x <=
+            0 ||
+          shape.props.x + shape.props.w + cConf.offset.x >
+            this.canvas.width + shape.props.w
+        )
+          return;
+        if (
+          (shape.props.y + shape.props.h - cConf.offset.y) / cConf.scale.y <=
+            0 ||
+          shape.props.y + shape.props.h + cConf.offset.y >
+            this.canvas.height + shape.props.h
+        )
+          return;
+      } else {
+        if (
+          (shape.props.x + shape.props.w * 2 - cConf.offset.x) /
+            cConf.scale.x <=
+            -this.canvas.width * 0.5 ||
+          shape.props.x + shape.props.w + cConf.offset.x >
+            this.canvas.width + this.canvas.width * 0.5
+        )
+          return;
+        if (
+          shape.props.y - cConf.offset.y + shape.props.h * 2 <=
+            -this.canvas.width * 0.5 ||
+          shape.props.y + shape.props.h + cConf.offset.y >
+            this.canvas.height + this.canvas.width * 0.5
+        )
+          return;
+      }
 
       const isActive = cConf.activeShapes.has(shape.id);
       switch (shape.type) {
@@ -818,7 +838,7 @@ class CanvasClass {
     }
   }
 
-  mouseClick(e: MouseEvent) {
+  mouseClick(e: TouchEvent | PointerEvent) {
     if (!this.isEditable) return;
     const { x: mouseX, y: mouseY } = this.getTransformedMouseCoords(e);
 
@@ -873,12 +893,13 @@ class CanvasClass {
         this.canvasShapes.forEach((shape) => {
           if (!shape || !cConf.activeShapes.has(shape.id)) return;
 
-          const s = duplicateShape({ shape });
+          const s = duplicateShape({ shape, imageMap: this.imageMap });
           if (s) {
             /* delete from actives */
             cConf.activeShapes.delete(shape.id);
 
             this.canvasShapes.push(s);
+
             /* add to bin */
             Bin.push({ type: "fresh", shapes: [s] });
 
@@ -1286,6 +1307,7 @@ class CanvasClass {
     this.canvas.addEventListener("touchmove", this.mouse_Move, {
       passive: false,
     });
+    this.canvas.addEventListener("touchstart", this.mouseClick);
     this.canvas.addEventListener("touchend", this.mouse_Up, { passive: false });
     this.canvas.addEventListener("touchcancel", this.mouse_Up, {
       passive: false,
@@ -1298,7 +1320,7 @@ class CanvasClass {
 
     // Canvas event listeners
     this.canvas.addEventListener("dblclick", this.mouseDblClick);
-    this.canvas.addEventListener("click", this.mouseClick);
+    this.canvas.addEventListener("pointerdown", this.mouseClick);
 
     // Global document and window listeners
     document.addEventListener("keydown", this.documentKeyDown);
@@ -1319,7 +1341,7 @@ class CanvasClass {
 
     // Remove canvas event listeners
     this.canvas.removeEventListener("dblclick", this.mouseDblClick);
-    this.canvas.removeEventListener("click", this.mouseClick);
+    this.canvas.removeEventListener("touchstart", this.mouseClick);
 
     // Remove global document and window listeners
     document.removeEventListener("keydown", this.documentKeyDown);

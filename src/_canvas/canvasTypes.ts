@@ -83,6 +83,11 @@ export interface ShapeProps {
   inset?: number;
 
   image?: string;
+
+  // for others
+  shouldAddarc?: boolean;
+
+  inverted?: boolean;
 }
 
 export interface CanvasShape {
