@@ -28,6 +28,7 @@ export default function FillOption({
       <input
         onChange={(e) => {
           handleColor(e.target.value);
+          handleStrokeColor(e.target.value);
         }}
         className="hidden"
         type="color"

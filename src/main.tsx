@@ -1,5 +1,4 @@
 // import { StrictMode } from "react";
-import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.tsx";
@@ -75,17 +74,14 @@ declare module "@tanstack/react-router" {
   }
 }
 
-const client = new QueryClient();
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 
 createRoot(document.getElementById("root")!).render(
   // <StrictMode>
   <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
     <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
-      <QueryClientProvider client={client}>
-        <RouterProvider router={router} />
-        <Toaster position="top-right" />
-      </QueryClientProvider>
+      <RouterProvider router={router} />
+      <Toaster position="top-right" />
     </ConvexProviderWithClerk>
   </ClerkProvider>,
 

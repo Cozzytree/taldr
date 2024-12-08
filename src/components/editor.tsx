@@ -32,176 +32,171 @@ const MenuBar = () => {
   }
 
   return (
-    <div className="sticky top-5 bg-background z-50 mb-9">
-      <div className="px-3 py-2 button-group flex flex-wrap gap-1 border-b border-b-foreground/30">
+    <div className="sticky top-0 pt-1 z-50 mb-3 bg-accent">
+      <div className="px-3 pb-1 button-group flex flex-wrap gap-1 border-b border-b-foreground/30">
         <Button
           size={"icon"}
-          onClick={() => editor.chain().focus().toggleBold().run()}
+          onPointerDown={() => editor.chain().focus().toggleBold().run()}
           disabled={!editor.can().chain().focus().toggleBold().run()}
-          className={editor.isActive("bold") ? "is-active" : ""}
+          className={`text-xs ${editor.isActive("bold") ? "bg-accent text-foreground" : "bg-foreground"}`}
         >
           <Bold />
         </Button>
         <Button
           size={"icon"}
-          onClick={() => editor.chain().focus().toggleItalic().run()}
+          onPointerDown={() => editor.chain().focus().toggleItalic().run()}
           disabled={!editor.can().chain().focus().toggleItalic().run()}
-          className={editor.isActive("italic") ? "is-active" : ""}
+          className={`text-xs ${editor.isActive("italic") ? "bg-accent text-foreground" : "bg-foreground"}`}
         >
           <Italic />
         </Button>
         <Button
           size={"icon"}
-          onClick={() => editor.chain().focus().toggleStrike().run()}
+          onPointerDown={() => editor.chain().focus().toggleStrike().run()}
           disabled={!editor.can().chain().focus().toggleStrike().run()}
-          className={editor.isActive("strike") ? "is-active" : ""}
+          className={`text-xs ${editor.isActive("strike") ? "bg-accent text-foreground" : "bg-foreground"}`}
         >
           <Strikethrough />
         </Button>
         <Button
           size={"icon"}
-          onClick={() => editor.chain().focus().toggleCode().run()}
+          onPointerDown={() => editor.chain().focus().toggleCode().run()}
           disabled={!editor.can().chain().focus().toggleCode().run()}
-          className={editor.isActive("code") ? "is-active" : ""}
+          className={`text-xs ${editor.isActive("code") ? "bg-accent text-foreground" : "bg-foreground"}`}
         >
           <Code />
         </Button>
-        <Button onClick={() => editor.chain().focus().unsetAllMarks().run()}>
+        <Button
+          size={"sm"}
+          onPointerDown={() => editor.chain().focus().unsetAllMarks().run()}
+        >
           Clear marks
         </Button>
-        <Button onClick={() => editor.chain().focus().clearNodes().run()}>
+        <Button
+          size={"sm"}
+          className="text-xs"
+          onPointerDown={() => editor.chain().focus().clearNodes().run()}
+        >
           Clear nodes
         </Button>
         <Button
           size={"sm"}
-          onClick={() => editor.chain().focus().setParagraph().run()}
-          className={editor.isActive("paragraph") ? "bg-foreground/60" : ""}
+          onPointerDown={() => editor.chain().focus().setParagraph().run()}
+          className={`text-xs ${editor.isActive("paragraph") ? "bg-accent text-foreground" : "bg-foreground"}`}
         >
           Paragraph
         </Button>
         <Button
           size={"icon"}
-          onClick={() =>
+          onPointerDown={() =>
             editor.chain().focus().toggleHeading({ level: 1 }).run()
           }
-          className={
-            editor.isActive("heading", { level: 1 }) ? "bg-foreground/65" : ""
-          }
+          className={`text-xs ${editor.isActive("heading", { level: 1 }) ? "bg-accent text-foreground" : "bg-foreground"}`}
         >
           <Heading1 />
         </Button>
         <Button
           size={"icon"}
-          onClick={() =>
+          onPointerDown={() =>
             editor.chain().focus().toggleHeading({ level: 2 }).run()
           }
-          className={
-            editor.isActive("heading", { level: 2 }) ? "bg-foreground/60" : ""
-          }
+          className={`text-xs ${editor.isActive("heading", { level: 2 }) ? "bg-accent text-foreground" : "bg-foreground"}`}
         >
           <Heading2 />
         </Button>
         <Button
           size={"icon"}
-          onClick={() =>
+          onPointerDown={() =>
             editor.chain().focus().toggleHeading({ level: 3 }).run()
           }
-          className={
-            editor.isActive("heading", { level: 3 }) ? "bg-foreground/60" : ""
-          }
+          className={`text-xs ${editor.isActive("heading", { level: 3 }) ? "bg-accent text-foreground" : "bg-foreground"}`}
         >
           <Heading3 />
         </Button>
         <Button
           size={"icon"}
-          onClick={() =>
+          onPointerDown={() =>
             editor.chain().focus().toggleHeading({ level: 4 }).run()
           }
-          className={
-            editor.isActive("heading", { level: 4 }) ? "bg-foreground/60" : ""
-          }
+          className={`text-xs ${editor.isActive("heading", { level: 4 }) ? "bg-accent text-foreground" : "bg-foreground"}`}
         >
           <Heading4 />
         </Button>
         <Button
           size={"icon"}
-          onClick={() =>
+          onPointerDown={() =>
             editor.chain().focus().toggleHeading({ level: 5 }).run()
           }
-          className={
-            editor.isActive("heading", { level: 5 }) ? "bg-foreground/60" : ""
-          }
+          className={`text-xs ${editor.isActive("heading", { level: 5 }) ? "bg-accent text-foreground" : "bg-foreground"}`}
         >
           <Heading5 />
         </Button>
         <Button
           size={"icon"}
-          onClick={() =>
+          onPointerDown={() =>
             editor.chain().focus().toggleHeading({ level: 6 }).run()
           }
-          className={
-            editor.isActive("heading", { level: 6 }) ? "bg-foreground/60" : ""
-          }
+          className={`text-xs ${editor.isActive("heading", { level: 6 }) ? "bg-accent text-foreground" : "bg-foreground"}`}
         >
           <Heading6 />
         </Button>
         <Button
           size={"icon"}
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
+          onPointerDown={() => editor.chain().focus().toggleBulletList().run()}
           className={editor.isActive("bulletList") ? "bg-foreground/60" : ""}
         >
           <List />
         </Button>
         <Button
           size="icon"
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
+          onPointerDown={() => editor.chain().focus().toggleOrderedList().run()}
           className={editor.isActive("orderedList") ? "bg-foreground/60" : ""}
         >
           <ListOrdered />
         </Button>
         <Button
           size={"icon"}
-          onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+          onPointerDown={() => editor.chain().focus().toggleCodeBlock().run()}
           className={editor.isActive("codeBlock") ? "bg-foreground/60" : ""}
         >
           <Code />
         </Button>
         <Button
           size={"icon"}
-          onClick={() => editor.chain().focus().toggleBlockquote().run()}
+          onPointerDown={() => editor.chain().focus().toggleBlockquote().run()}
           className={editor.isActive("blockquote") ? "bg-foreground/60" : ""}
         >
           <Quote />
         </Button>
         <Button
           size={"icon"}
-          onClick={() => editor.chain().focus().setHorizontalRule().run()}
+          onPointerDown={() => editor.chain().focus().setHorizontalRule().run()}
         >
           <Minus />
         </Button>
         <Button
           size={"sm"}
-          onClick={() => editor.chain().focus().setHardBreak().run()}
+          onPointerDown={() => editor.chain().focus().setHardBreak().run()}
         >
           Hard break
         </Button>
         <Button
           size={"icon"}
-          onClick={() => editor.chain().focus().undo().run()}
+          onPointerDown={() => editor.chain().focus().undo().run()}
           disabled={!editor.can().chain().focus().undo().run()}
         >
           <Undo />
         </Button>
         <Button
           size={"icon"}
-          onClick={() => editor.chain().focus().redo().run()}
+          onPointerDown={() => editor.chain().focus().redo().run()}
           disabled={!editor.can().chain().focus().redo().run()}
         >
           <Redo />
         </Button>
         <Button
           size="sm"
-          onClick={() => editor.chain().focus().setColor("#958DF1").run()}
+          onPointerDown={() => editor.chain().focus().setColor("#958DF1").run()}
           className={
             editor.isActive("textStyle", { color: "#958DF1" })
               ? "bg-foreground/60"

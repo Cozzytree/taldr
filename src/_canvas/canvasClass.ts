@@ -304,7 +304,7 @@ class CanvasClass {
   }
 
   mouse_Down(e: PointerEvent | TouchEvent) {
-    e.preventDefault();
+    // e.preventDefault();
     const { x: mouseX, y: mouseY } = this.getTransformedMouseCoords(e);
     if (!this.isEditable) {
       this.mouseDownPoint = { x: mouseX, y: mouseY };
@@ -917,91 +917,9 @@ class CanvasClass {
           this.findEmptyIndexAndInsert(c);
         });
       } else if (e.key === "z") {
-        const shapes: CanvasShape[] = [];
-        /* get back from bin */
-        const binShapes = Bin.pop();
-
-        if (binShapes) {
-          switch (binShapes.type) {
-            case "delete":
-              /* create the shapes */
-              binShapes.shapes.forEach((s) => {
-                shapes.push(JSON.parse(JSON.stringify(s)));
-
-                if (s.type == "image" && s.props.image) {
-                  const i = new Image();
-                  i.src = s.props.image;
-                  this.imageMap.set(s.id, i);
-                }
-
-                this.findEmptyIndexAndInsert(s);
-              });
-              break;
-            case "fresh":
-              /* delete the shapes */
-              binShapes.shapes.forEach((s) => {
-                const v = this.canvasShapes.findIndex((c) => c?.id === s.id);
-                if (v !== -1) {
-                  shapes.push(JSON.parse(JSON.stringify(this.canvasShapes[v])));
-                  this.canvasShapes.splice(v, 1);
-                }
-              });
-              break;
-            case "common":
-              binShapes.shapes.forEach((s) => {
-                const v = this.canvasShapes.findIndex((v) => v?.id === s.id);
-                if (v !== -1) {
-                  shapes.push(JSON.parse(JSON.stringify(this.canvasShapes[v])));
-                  this.canvasShapes[v] = s;
-                }
-              });
-              break;
-          }
-
-          /* i dont know what to say */
-          Restore.push({ type: binShapes.type, shapes });
-        }
+        this.undo();
       } else if (e.key === "y") {
-        const shapes: CanvasShape[] = [];
-        /* revert */
-        const restore = Restore.pop();
-
-        if (restore) {
-          switch (restore.type) {
-            case "delete":
-              /* delete the shapes */
-              restore.shapes.forEach((s) => {
-                const v = this.canvasShapes.findIndex((c) => c?.id === s.id);
-                if (v !== -1) {
-                  if (s.type == "image") {
-                    this.imageMap.delete(s.id);
-                  }
-                  shapes.push(JSON.parse(JSON.stringify(this.canvasShapes[v])));
-                  this.canvasShapes.splice(v, 1);
-                }
-              });
-              break;
-            case "fresh":
-              /* create the shapes */
-              restore.shapes.forEach((s) => {
-                shapes.push(JSON.parse(JSON.stringify(s)));
-                this.findEmptyIndexAndInsert(s);
-              });
-              break;
-            case "common":
-              restore.shapes.forEach((s) => {
-                const v = this.canvasShapes.findIndex((v) => v?.id === s.id);
-                if (v !== -1) {
-                  shapes.push(JSON.parse(JSON.stringify(this.canvasShapes[v])));
-                  this.canvasShapes[v] = s;
-                }
-              });
-              break;
-          }
-
-          /* i dont know what to say */
-          Bin.push({ type: restore.type, shapes });
-        }
+        this.redo();
       }
     } else if (e.key === "Delete") {
       const shapes = this.deleteShapes();
@@ -1050,6 +968,96 @@ class CanvasClass {
     });
 
     return toBin;
+  }
+
+  undo() {
+    const shapes: CanvasShape[] = [];
+    /* get back from bin */
+    const binShapes = Bin.pop();
+
+    if (binShapes) {
+      switch (binShapes.type) {
+        case "delete":
+          /* create the shapes */
+          binShapes.shapes.forEach((s) => {
+            shapes.push(JSON.parse(JSON.stringify(s)));
+
+            if (s.type == "image" && s.props.image) {
+              const i = new Image();
+              i.src = s.props.image;
+              this.imageMap.set(s.id, i);
+            }
+
+            this.findEmptyIndexAndInsert(s);
+          });
+          break;
+        case "fresh":
+          /* delete the shapes */
+          binShapes.shapes.forEach((s) => {
+            const v = this.canvasShapes.findIndex((c) => c?.id === s.id);
+            if (v !== -1) {
+              shapes.push(JSON.parse(JSON.stringify(this.canvasShapes[v])));
+              this.canvasShapes.splice(v, 1);
+            }
+          });
+          break;
+        case "common":
+          binShapes.shapes.forEach((s) => {
+            const v = this.canvasShapes.findIndex((v) => v?.id === s.id);
+            if (v !== -1) {
+              shapes.push(JSON.parse(JSON.stringify(this.canvasShapes[v])));
+              this.canvasShapes[v] = s;
+            }
+          });
+          break;
+      }
+
+      /* i dont know what to say */
+      Restore.push({ type: binShapes.type, shapes });
+    }
+  }
+
+  redo() {
+    const shapes: CanvasShape[] = [];
+    /* revert */
+    const restore = Restore.pop();
+
+    if (restore) {
+      switch (restore.type) {
+        case "delete":
+          /* delete the shapes */
+          restore.shapes.forEach((s) => {
+            const v = this.canvasShapes.findIndex((c) => c?.id === s.id);
+            if (v !== -1) {
+              if (s.type == "image") {
+                this.imageMap.delete(s.id);
+              }
+              shapes.push(JSON.parse(JSON.stringify(this.canvasShapes[v])));
+              this.canvasShapes.splice(v, 1);
+            }
+          });
+          break;
+        case "fresh":
+          /* create the shapes */
+          restore.shapes.forEach((s) => {
+            shapes.push(JSON.parse(JSON.stringify(s)));
+            this.findEmptyIndexAndInsert(s);
+          });
+          break;
+        case "common":
+          restore.shapes.forEach((s) => {
+            const v = this.canvasShapes.findIndex((v) => v?.id === s.id);
+            if (v !== -1) {
+              shapes.push(JSON.parse(JSON.stringify(this.canvasShapes[v])));
+              this.canvasShapes[v] = s;
+            }
+          });
+          break;
+      }
+
+      /* i dont know what to say */
+      Bin.push({ type: restore.type, shapes });
+    }
   }
 
   findEmptyIndexAndInsert(shape: CanvasShape) {
@@ -1274,14 +1282,12 @@ class CanvasClass {
     cConf.offset = { x: 0, y: 0 };
 
     // Add event listeners with passive: false
-    document.addEventListener("touchstart", this.mouse_Down, {
+    this.canvas.addEventListener("touchstart", this.mouse_Down);
+    this.canvas.addEventListener("touchmove", this.mouse_Move, {
       passive: false,
     });
-    document.addEventListener("touchmove", this.mouse_Move, {
-      passive: false,
-    });
-    document.addEventListener("touchend", this.mouse_Up, { passive: false });
-    document.addEventListener("touchcancel", this.mouse_Up, {
+    this.canvas.addEventListener("touchend", this.mouse_Up, { passive: false });
+    this.canvas.addEventListener("touchcancel", this.mouse_Up, {
       passive: false,
     });
 
@@ -1307,9 +1313,9 @@ class CanvasClass {
     document.removeEventListener("pointerup", this.mouse_Up);
 
     // Remove touch event listeners
-    document.removeEventListener("touchstart", this.mouse_Down);
-    document.removeEventListener("touchmove", this.mouse_Move);
-    document.removeEventListener("touchend", this.mouse_Up);
+    this.canvas.removeEventListener("touchstart", this.mouse_Down);
+    this.canvas.removeEventListener("touchmove", this.mouse_Move);
+    this.canvas.removeEventListener("touchend", this.mouse_Up);
 
     // Remove canvas event listeners
     this.canvas.removeEventListener("dblclick", this.mouseDblClick);

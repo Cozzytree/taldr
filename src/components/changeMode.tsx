@@ -62,19 +62,19 @@ export default function ChangeMode({
         )}
 
         <button
-          onClick={() => setMode("editor")}
+          onPointerDown={() => setMode("editor")}
           className={`${mode === "editor" ? "bg-foreground text-background" : ""} transition-[background] duration-150 px-2 py-1 border border-foreground text-xs rounded-l-sm`}
         >
           Editor
         </button>
         <button
-          onClick={() => setMode("both")}
+          onPointerDown={() => setMode("both")}
           className={`${mode === "both" ? "bg-foreground text-background" : ""} hidden md:block transition-[background] duration-150 px-2 py-1 border border-foreground text-xs`}
         >
           Both
         </button>
         <button
-          onClick={() => setMode("canvas")}
+          onPointerDown={() => setMode("canvas")}
           className={`${mode === "canvas" ? "bg-foreground text-background" : ""} transition-[background] duration-150 px-2 py-1 border border-foreground text-xs rounded-r-sm`}
         >
           Canvas

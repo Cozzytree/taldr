@@ -1,95 +1,34 @@
-import {
-  MousePointer2,
-  Type,
-  Grab,
-  LucideIcon,
-  Pencil,
-  Square,
-  MoveRight,
-  Circle,
-  ContainerIcon,
-  ArrowBigUpDash,
-  Images,
-} from "lucide-react";
-import { modes } from "../canvasTypes";
-import { cn } from "@/lib/utils";
-import { Button, buttonVariants } from "@/components/ui/button";
-import CanvasClass from "@/_canvas/canvasClass.ts";
 import CanvasOptions from "@/_canvas/_components/canvasOptions.tsx";
+import CanvasClass from "@/_canvas/canvasClass.ts";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Menubar,
   MenubarContent,
   MenubarMenu,
   MenubarTrigger,
 } from "@/components/ui/menubar.tsx";
-import { MutableRefObject, useEffect } from "react";
+import { cn } from "@/lib/utils";
+import { ArrowBigUpDash, LucideIcon, Redo, Undo } from "lucide-react";
+import { MutableRefObject } from "react";
 import { cConf } from "../canvasConfig";
-
-const m: { icon: LucideIcon; name: modes }[] = [
-  {
-    icon: Grab,
-    name: "hands_free",
-  },
-  {
-    icon: MousePointer2,
-    name: "pointer",
-  },
-  {
-    icon: Square,
-    name: "rect",
-  },
-  {
-    icon: Circle,
-    name: "ellipse",
-  },
-  {
-    icon: MoveRight,
-    name: "line",
-  },
-  {
-    icon: Pencil,
-    name: "pencil",
-  },
-  {
-    icon: Type,
-    name: "text",
-  },
-  {
-    icon: Images,
-    name: "image",
-  },
-  {
-    icon: ContainerIcon,
-    name: "figure",
-  },
-];
+import { modes } from "../canvasTypes";
 
 const ChangeModes = ({
+  modes,
   canvas,
   currMode,
   changeMode,
   activeShapes,
 }: {
+  modes: {
+    icon: LucideIcon;
+    name: modes;
+  }[];
   currMode: modes;
   activeShapes: number;
   changeMode: (mode: modes) => void;
   canvas: MutableRefObject<CanvasClass | null>;
 }) => {
-  useEffect(() => {
-    const handleChangeMode = (e: KeyboardEvent) => {
-      const key = Number(e.key);
-      if (isNaN(key)) return;
-      if (m[key]) {
-        changeMode(m[key].name);
-      }
-    };
-    document.addEventListener("keydown", handleChangeMode);
-
-    return () => {
-      document.removeEventListener("keydown", handleChangeMode);
-    };
-  }, []);
-
   const handleImage = (img: File) => {
     const reader = new FileReader();
 
@@ -131,9 +70,9 @@ const ChangeModes = ({
   };
 
   return (
-    <div className="w-full flex justify-center absolute bottom-16 z-[100]">
-      <div className="flex items-center">
-        {m.map((mode, i) => (
+    <>
+      <div className="absolute bottom-16 sm:bottom-12 left-[50%] z-[100] translate-x-[-50%] flex items-center divide-x-2 border border-accent">
+        {modes.map((mode, i) => (
           <div key={i}>
             {mode.name === "image" ? (
               <>
@@ -176,7 +115,7 @@ const ChangeModes = ({
                 }}
                 size="lg"
                 className={cn(
-                  "w-6 h-6 sm:w-8 sm:h-8 p-2 sm:px-[1.3em] focus:outline-0 outline-0 hover:bg-foreground/10 hover:text-foreground relative",
+                  "w-6 h-6 sm:w-8 sm:h-8 p-2 sm:px-[1.3em] focus:outline-0 outline-0 hover:bg-foreground/10 hover:text-foreground relative rounded-none",
                   currMode === mode.name
                     ? "bg-foreground"
                     : "bg-background text-foreground",
@@ -190,6 +129,31 @@ const ChangeModes = ({
             )}
           </div>
         ))}
+
+        <div className="w-full flex md:hidden items-center justify-start gap-2 px-2">
+          <Button
+            onPointerDown={() => {
+              if (!canvas.current) return;
+              canvas.current.undo();
+            }}
+            variant={"ghost"}
+            size={"icon"}
+            className="border border-accent"
+          >
+            <Undo />
+          </Button>
+          <Button
+            onPointerDown={() => {
+              if (!canvas.current) return;
+              canvas.current.redo();
+            }}
+            variant={"ghost"}
+            size={"icon"}
+            className="border border-accent"
+          >
+            <Redo />
+          </Button>
+        </div>
 
         <div className={"md:hidden"}>
           <Menubar>
@@ -207,7 +171,7 @@ const ChangeModes = ({
               </MenubarTrigger>
               <MenubarContent
                 className={
-                  "bg-foreground/5 flex flex-col gap-2 p-1 max-w-[10em]"
+                  "bg-foreground/5 flex flex-col gap-2 p-1 max-w-[10em] z-[999]"
                 }
               >
                 <CanvasOptions activesShapes={activeShapes} canvas={canvas} />
@@ -216,7 +180,7 @@ const ChangeModes = ({
           </Menubar>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

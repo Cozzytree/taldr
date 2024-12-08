@@ -289,6 +289,7 @@ export default function CanvasOptions({
         handleLineWidth={handleStroke}
         handleFontWeight={handleFontWeight}
       />
+
       {/* <Forward /> */}
       {activesShapes > 0 && (
         <div className={"flex flex-col gap-2 px-2"}>
