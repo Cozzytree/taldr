@@ -53,7 +53,7 @@ export default function TrialRoute() {
           className={`h-full w-screen grid ${mode === "both" ? "grid-cols-[0.6fr_1fr]" : "grid-cols-1"} overflow-hidden divide-x`}
         >
           <div
-            className={`${mode === "canvas" ? "hidden" : "grid"} grid-rows-[auto_1fr] h-[94vh] overflow-y-auto no-scrollbar-guide bg-accent/80 mt-10 rounded-md m-2`}
+            className={`${mode === "canvas" ? "hidden" : "grid"} grid-rows-[auto_1fr] h-[94vh] overflow-y-auto no-scrollbar-guide bg-accent/80 mt-1 rounded-md m-2`}
           >
             <Editor />
           </div>

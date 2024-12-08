@@ -177,7 +177,7 @@ const Canvas = ({
               }}
             />
 
-            <div className="hidden md:flex max-w-[10em] absolute z-[100] top-9 right-0 bg-accent p-2 rounded-md flex-col gap-2">
+            <div className="hidden md:flex max-w-[10em] absolute z-[100] top-0 right-0 bg-accent p-2 rounded-md flex-col gap-2">
               <CanvasOptions canvas={canvas} activesShapes={activeShapes} />
             </div>
           </>

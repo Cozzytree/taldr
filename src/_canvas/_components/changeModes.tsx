@@ -71,7 +71,7 @@ const ChangeModes = ({
 
   return (
     <>
-      <div className="absolute bottom-24 sm:bottom-12 left-[50%] z-[100] translate-x-[-50%] flex items-center divide-x-2 border border-accent">
+      <div className="fixed bottom-8 left-[50%] z-[100] translate-x-[-50%] flex items-center divide-x-2 border border-accent">
         {modes.map((mode, i) => (
           <div key={i}>
             {mode.name === "image" ? (
@@ -85,7 +85,7 @@ const ChangeModes = ({
                       variant: "default",
                       size: "sm",
                     }),
-                    "w-6 h-6 p-2 sm:w-8 sm:h-8 dm:px-[1.3em] focus:outline-0 outline-0 hover:bg-foreground/10 hover:text-foreground relative",
+                    "w-5 h-5 p-1 sm:w-8 sm:h-8 dm:px-[1.3em] focus:outline-0 outline-0 hover:bg-foreground/10 hover:text-foreground relative",
                     currMode === mode.name
                       ? "bg-foreground"
                       : "bg-background text-foreground",
@@ -115,7 +115,7 @@ const ChangeModes = ({
                 }}
                 size="lg"
                 className={cn(
-                  "w-6 h-6 sm:w-8 sm:h-8 p-2 sm:px-[1.3em] focus:outline-0 outline-0 hover:bg-foreground/10 hover:text-foreground relative rounded-none",
+                  "w-5 h-5 sm:w-8 sm:h-8 p-1 sm:px-[1.3em] focus:outline-0 outline-0 hover:bg-foreground/10 hover:text-foreground relative rounded-none",
                   currMode === mode.name
                     ? "bg-foreground"
                     : "bg-background text-foreground",
@@ -138,7 +138,7 @@ const ChangeModes = ({
             }}
             variant={"ghost"}
             size={"icon"}
-            className="border border-accent"
+            className="w-5 h-5 sm:w-8 sm:h-8 p-[0.5em] border border-accent"
           >
             <Undo />
           </Button>
@@ -149,7 +149,7 @@ const ChangeModes = ({
             }}
             variant={"ghost"}
             size={"icon"}
-            className="border border-accent"
+            className="w-5 h-5 sm:w-8 sm:h-8 p-[0.5em] border border-accent"
           >
             <Redo />
           </Button>
@@ -163,7 +163,7 @@ const ChangeModes = ({
                   variant={null}
                   size={"sm"}
                   className={
-                    "sm:w-8 sm:h-8 w-fit h-fit p-[0.5em] focus:outline-0 outline-0 hover:bg-foreground/10 hover:text-foreground"
+                    "w-5 h-5 sm:w-8 sm:h-8 p-[0.5em] focus:outline-0 outline-0 hover:bg-foreground/10 hover:text-foreground"
                   }
                 >
                   <ArrowBigUpDash />
