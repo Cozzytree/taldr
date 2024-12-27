@@ -2,9 +2,10 @@ import { cn, Mode } from "@/lib/utils";
 import { LoaderCircle } from "lucide-react";
 import { lazy, Suspense, useState } from "react";
 import { CanvasShape } from "@/_canvas/canvasTypes";
+import { useTheme } from "@/components/theme-provider";
 const Editor = lazy(() => import("@/components/editor"));
 const ChangeMode = lazy(() => import("@/components/changeMode"));
-
+// const FabricCanvas = lazy(() => import("@/fabric_canvas/canvas"));
 const Canvas = lazy(() => import("@/_canvas/canvas"));
 
 const initialShapes: CanvasShape[] = [
@@ -55,11 +56,12 @@ export default function TrialRoute() {
           className={`h-full w-screen grid ${mode === "both" ? "grid-cols-[0.6fr_1fr]" : "grid-cols-1"} overflow-hidden divide-x`}
         >
           <div
-            className={`${mode === "canvas" ? "hidden" : "grid"} grid-rows-[auto_1fr] h-[94vh] overflow-y-auto no-scrollbar-guide bg-accent/80 mt-1 rounded-md m-2`}
+            className={`${mode === "canvas" ? "hidden" : "grid"} grid-rows-[auto_1fr] h-[94vh] overflow-y-auto no-scrollbar-guide bg-accent/80 mt-1 rounded-md m-2 z-[99999]`}
           >
             <Editor />
           </div>
           <div className={cn(mode === "editor" && "hidden")}>
+            {/* <FabricCanvas mode={mode} /> */}
             <Canvas
               isPreview={false}
               initialShapes={shapes}

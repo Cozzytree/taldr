@@ -19,6 +19,7 @@ const drawText = ({
 }) => {
   context.beginPath();
   context.font = `${shape.fontWeight} ${shape.fontSize}px Borel`;
+  context.strokeStyle = shape.stroke;
   context.fillStyle = shape.fontColor;
   context.textAlign = shape.textAlign;
   context.textBaseline = "middle";
@@ -39,12 +40,14 @@ const drawText = ({
 
   texts.forEach((text) => {
     if (text === "") return;
+    context.strokeText(text, xPoint, maxHeight, shape.w);
     context.fillText(text, xPoint, maxHeight, shape.w);
     maxHeight += shape.fontSize;
   });
-  shape.h = maxHeight - shape.y - tolerance;
+  shape.h = maxHeight - shape.y - shape.fontSize;
 
   context.fill();
+  context.stroke();
   context.closePath();
 
   if (isActive && activeColor) {
@@ -59,7 +62,7 @@ const drawText = ({
       activeColor,
       shouldFill: true,
     });
-    context.beginPath();
+    // context.beginPath();
     context.fillStyle = activeColor;
     context.lineWidth = 2;
     context.rect(
@@ -69,7 +72,7 @@ const drawText = ({
       shape.h + tolerance * 2,
     );
     context.stroke();
-    context.closePath();
+    // context.closePath();
   }
 
   if (shouldRestore) {

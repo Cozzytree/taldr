@@ -71,7 +71,7 @@ const ChangeModes = ({
 
   return (
     <>
-      <div className="absolute bottom-20  md:bottom-16 left-[50%] z-[100] translate-x-[-50%] flex items-center divide-x-2 border border-accent">
+      <div className="absolute bottom-20 md:bottom-16 left-[50%] z-[100] translate-x-[-50%] flex items-center divide-x-2 border border-foreground/10 rounded-xl px-2">
         {modes.map((mode, i) => (
           <div key={i}>
             {mode.name === "image" ? (

@@ -95,7 +95,7 @@ const Head = () => {
       </div>
       <SignedOut>
         <SignInButton signUpForceRedirectUrl={"/workspaces"}>
-          <Button className="" size={"lg"}>
+          <Button className="" size={"sm"}>
             Sign In
           </Button>
         </SignInButton>

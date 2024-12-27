@@ -9,13 +9,13 @@ export default function FillOption({
 }) {
   return (
     <div className="w-full grid grid-cols-4 gap-1 place-items-center">
-      {colors.map((c) => (
+      {colors.map((c, i) => (
         <button
           onPointerDown={() => {
             handleColor(c);
             handleStrokeColor(c);
           }}
-          key={c}
+          key={i}
           style={{ background: c }}
           className={`bg-[${c}] w-full h-5 rounded-sm`}
         />

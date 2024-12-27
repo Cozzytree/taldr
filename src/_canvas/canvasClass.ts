@@ -176,38 +176,37 @@ class CanvasClass {
     this.canvasShapes.forEach((shape) => {
       if (!shape) return;
 
-      if (cConf.scale.x === 1) {
-        if (
-          (shape.props.x + shape.props.w - cConf.offset.x) / cConf.scale.x <=
-            0 ||
-          shape.props.x + shape.props.w + cConf.offset.x >
-            this.canvas.width + shape.props.w
-        )
-          return;
-        if (
-          (shape.props.y + shape.props.h - cConf.offset.y) / cConf.scale.y <=
-            0 ||
-          shape.props.y + shape.props.h + cConf.offset.y >
-            this.canvas.height + shape.props.h
-        )
-          return;
-      } else {
-        if (
-          (shape.props.x + shape.props.w * 2 - cConf.offset.x) /
-            cConf.scale.x <=
-            -this.canvas.width * 0.5 ||
-          shape.props.x + shape.props.w + cConf.offset.x >
-            this.canvas.width + this.canvas.width * 0.5
-        )
-          return;
-        if (
-          shape.props.y - cConf.offset.y + shape.props.h * 2 <=
-            -this.canvas.width * 0.5 ||
-          shape.props.y + shape.props.h + cConf.offset.y >
-            this.canvas.height + this.canvas.width * 0.5
-        )
-          return;
-      }
+      // if (cConf.scale.x === 1) {
+      //   if (
+      //     (shape.props.x + shape.props.w - cConf.offset.x) / cConf.scale.x <=
+      //       0 ||
+      //     shape.props.x + shape.props.w > this.canvas.width + shape.props.w
+      //   )
+      //     return;
+      //   if (
+      //     (shape.props.y + shape.props.h - cConf.offset.y) / cConf.scale.y <=
+      //       0 ||
+      //     shape.props.y + shape.props.h + cConf.offset.y >
+      //       this.canvas.height + shape.props.h
+      //   )
+      //     return;
+      // } else {
+      //   if (
+      //     (shape.props.x + shape.props.w * 2 - cConf.offset.x) /
+      //       cConf.scale.x <=
+      //       -this.canvas.width * 0.5 ||
+      //     shape.props.x + shape.props.w + cConf.offset.x >
+      //       this.canvas.width + this.canvas.width * 0.5
+      //   )
+      //     return;
+      //   if (
+      //     shape.props.y - cConf.offset.y + shape.props.h * 2 <=
+      //       -this.canvas.width * 0.5 ||
+      //     shape.props.y + shape.props.h + cConf.offset.y >
+      //       this.canvas.height + this.canvas.width * 0.5
+      //   )
+      //     return;
+      // }
 
       const isActive = cConf.activeShapes.has(shape.id);
       switch (shape.type) {
@@ -345,25 +344,33 @@ class CanvasClass {
       return;
     }
 
+    // isInside({
+    //   inner: { x: mouseX, y: mouseY, w: 0, h: 0 },
+    //   outer: {
+    //     x: this.multipleSelection.x,
+    //     y: this.multipleSelection.y,
+    //     w: this.multipleSelection.width,
+    //     h: this.multipleSelection.height,
+    //   },
+    // })
     if (this.multipleSelection.isSelected) {
+      console.log(
+        mouseY > this.multipleSelection.y,
+        mouseY < this.multipleSelection.y + this.multipleSelection.height,
+      );
       if (
-        isInside({
-          inner: { x: mouseX, y: mouseY, w: 0, h: 0 },
-          outer: {
-            x: this.multipleSelection.x,
-            y: this.multipleSelection.y,
-            w: this.multipleSelection.width,
-            h: this.multipleSelection.height,
-          },
-        })
+        mouseX > this.multipleSelection.x &&
+        mouseX < this.multipleSelection.x + this.multipleSelection.width &&
+        mouseY > this.multipleSelection.y &&
+        mouseY < this.multipleSelection.y + this.multipleSelection.height
       ) {
         this.canvasShapes.forEach((s) => {
-          if (!s || !cConf.activeShapes.has(s.id)) return;
-          getOffsets({ mouseX, mouseY, shape: s });
+          if (s && cConf.activeShapes.has(s.id))
+            getOffsets({ mouseX, mouseY, shape: s });
         });
         this.multipleSelection.isSelectedDown = true;
-        this.multipleSelection.offsetX = mouseX - this.multipleSelection.x;
-        this.multipleSelection.offsetY = mouseY - this.multipleSelection.y;
+        this.multipleSelection.offsetX = this.multipleSelection.x - mouseX;
+        this.multipleSelection.offsetY = this.multipleSelection.y - mouseY;
         return;
       } else {
         this.multipleSelection.isSelected = false;
@@ -415,8 +422,6 @@ class CanvasClass {
       return;
     }
 
-    // cConf.activeShapes.clear(); /* clear actives */
-
     /* drag shape */
     let Sdrag_shape: number | null = null;
     for (let index = 0; index < this.canvasShapes.length; index++) {
@@ -459,7 +464,10 @@ class CanvasClass {
     }
 
     /* start massive selection */
-    if (!this.dragShape && !this.resizeShape) {
+    if (
+      (!this.dragShape && !this.resizeShape) ||
+      !this.multipleSelection.isSelected
+    ) {
       this.multipleSelection.isSelecting = true;
       this.multipleSelection.x = mouseX;
       this.multipleSelection.y = mouseY;
@@ -490,6 +498,41 @@ class CanvasClass {
 
     if (!this.isEditable) return;
 
+    if (this.multipleSelection.isSelectedDown) {
+      this.multipleSelection.x = mouseX + this.multipleSelection.offsetX;
+      this.multipleSelection.y = mouseY + this.multipleSelection.offsetY;
+
+      this.clearRect(
+        this.fallbackContext,
+        this.fallbackCanvas.width,
+        this.fallbackCanvas.height,
+      );
+
+      selectonDrawRect({
+        activeColor: this.activeColor,
+        ctx: this.fallbackContext,
+        params: {
+          x: this.multipleSelection.x,
+          y: this.multipleSelection.y,
+          w: this.multipleSelection.width,
+          h: this.multipleSelection.height,
+        },
+      });
+
+      this.canvasShapes.forEach((s) => {
+        if (!s || !cConf.activeShapes.has(s.id)) return;
+        dragMove({
+          allShapes: this.canvasShapes,
+          mouseX,
+          mouseY,
+          shape: s,
+        });
+      });
+      this.draw();
+      return;
+    }
+    if (this.multipleSelection.isSelected) return;
+
     /* cursor helper */
     let hasCur = false;
     this.canvasShapes.forEach((s) => {
@@ -517,39 +560,6 @@ class CanvasClass {
 
     this.currentMousePosition = { x: mouseX, y: mouseY };
 
-    if (this.multipleSelection.isSelectedDown) {
-      this.multipleSelection.x = mouseX - this.multipleSelection.offsetX;
-      this.multipleSelection.y = mouseY - this.multipleSelection.offsetY;
-
-      this.clearRect(
-        this.fallbackContext,
-        this.fallbackCanvas.width,
-        this.fallbackCanvas.height,
-      );
-
-      selectonDrawRect({
-        ctx: this.fallbackContext,
-        params: {
-          x: this.multipleSelection.x,
-          y: this.multipleSelection.y,
-          w: this.multipleSelection.width,
-          h: this.multipleSelection.height,
-        },
-      });
-
-      this.canvasShapes.forEach((s) => {
-        if (!s || !cConf.activeShapes.has(s.id)) return;
-        dragMove({
-          allShapes: this.canvasShapes,
-          mouseX,
-          mouseY,
-          shape: s,
-        });
-      });
-      this.draw();
-      return;
-    }
-
     if (this.multipleSelection.isSelecting) {
       this.clearRect(
         this.fallbackContext,
@@ -557,6 +567,7 @@ class CanvasClass {
         this.fallbackCanvas.height,
       );
       selectonDrawRect({
+        activeColor: this.activeColor,
         ctx: this.fallbackContext,
         params: {
           x: this.multipleSelection.x,
@@ -565,6 +576,7 @@ class CanvasClass {
           h: mouseY - this.multipleSelection.y,
         },
       });
+      return;
     }
 
     if (this.newShapeParams) {
@@ -579,6 +591,7 @@ class CanvasClass {
         ctx: this.fallbackContext,
         shape: this.newShapeParams as CanvasShape,
       });
+      this.fallbackContext.restore();
     }
 
     /* resize_move- */
@@ -631,12 +644,28 @@ class CanvasClass {
         reEvaluateShape(s, this.canvasShapes);
       });
 
+      // const { x, y, w, h } = checkShapeInsideSelection({
+      //   allShapes: this.canvasShapes,
+      //   selection: {
+      //     x: this.multipleSelection.x,
+      //     y: this.multipleSelection.y,
+      //     w: this.multipleSelection.width,
+      //     h: this.multipleSelection.height,
+      //   },
+      // });
+
+      // this.multipleSelection.x = x;
+      // this.multipleSelection.y = y;
+      // this.multipleSelection.width = w;
+      // this.multipleSelection.height = h;
+
       this.clearRect(
         this.fallbackContext,
         this.fallbackCanvas.width,
         this.fallbackCanvas.height,
       );
       selectonDrawRect({
+        activeColor: this.activeColor,
         ctx: this.fallbackContext,
         params: {
           x: this.multipleSelection.x,
@@ -678,16 +707,25 @@ class CanvasClass {
       /* massive selection rect */
       this.multipleSelection.isSelecting = false;
       if (w > 20 && h > 20) {
+        console.log(x, y, w, h);
         this.multipleSelection.isSelected = true;
+
         this.clearRect(
           this.fallbackContext,
           this.fallbackCanvas.width,
           this.fallbackCanvas.height,
         );
         selectonDrawRect({
+          activeColor: this.activeColor,
           ctx: this.fallbackContext,
           params: { x, y, w, h },
         });
+
+        this.multipleSelection.x = x;
+        this.multipleSelection.y = x;
+        this.multipleSelection.width = w;
+        this.multipleSelection.height = h;
+
         this.draw();
         return;
       }
@@ -888,8 +926,8 @@ class CanvasClass {
   documentKeyDown(e: KeyboardEvent) {
     if (!this.isEditable) return;
     if (e.ctrlKey) {
-      e.preventDefault();
       if (e.key === "d") {
+        e.preventDefault();
         this.canvasShapes.forEach((shape) => {
           if (!shape || !cConf.activeShapes.has(shape.id)) return;
 
@@ -912,8 +950,7 @@ class CanvasClass {
         });
       } else if (e.key === "a") {
         this.canvasShapes.forEach((s) => {
-          if (!s) return;
-          cConf.activeShapes.set(s.id, true);
+          if (s) cConf.activeShapes.set(s.id, true);
         });
       } else if (e.key === "c") {
         this.copies = [];
@@ -960,8 +997,7 @@ class CanvasClass {
     if (!this.isEditable) return;
     const toBin: CanvasShape[] = [];
     this.canvasShapes.forEach((s, index) => {
-      if (!s) return;
-      if (cConf.activeShapes.has(s.id)) {
+      if (s && cConf.activeShapes.has(s.id)) {
         if (s.type === "figure") {
           this.canvasShapes.forEach((a, i) => {
             if (s && s.props.containerId === s.id) {
@@ -1113,6 +1149,7 @@ class CanvasClass {
         window.innerHeight,
       );
       selectonDrawRect({
+        activeColor: this.activeColor,
         ctx: this.fallbackContext,
         params: {
           x: this.multipleSelection.x,
